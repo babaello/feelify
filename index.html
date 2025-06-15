@@ -3,284 +3,446 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Feelify – Find songs by your mood</title>
-  
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Montserrat:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
-  
+  <title>Feelify – Find Songs by Your Mood</title>
   <style>
-    /* Reset */
+    /* Reset and base */
     *, *::before, *::after {
       box-sizing: border-box;
     }
     body {
-      margin: 0; padding: 0;
-      font-family: 'Poppins', 'Montserrat', sans-serif;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-color);
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      color: #e0e0e0;
-      overflow: hidden;
+      min-height: 100vh;
+      padding: 1rem;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+
+    /* Theme variables */
+    :root {
+      --green: #1DB954;
+      --green-dark: #17a247;
+      --bg-dark-start: #121212;
+      --bg-dark-end: #1db954;
+      --bg-light-start: #f0f4f8;
+      --bg-light-end: #88c057;
+      --text-color-dark: #fff;
+      --text-color-light: #121212;
+      --bg-gradient: linear-gradient(135deg, var(--bg-dark-start), var(--bg-dark-end));
+      --text-color: var(--text-color-dark);
+      --input-bg: #222;
+      --input-border: var(--green);
+      --btn-bg: var(--green);
+      --btn-color: var(--bg-dark-start);
+      --shadow-color: rgba(29, 185, 84, 0.3);
+    }
+    body.light {
+      --bg-gradient: linear-gradient(135deg, var(--bg-light-start), var(--bg-light-end));
+      --text-color: var(--text-color-light);
+      --input-bg: #fff;
+      --input-border: var(--green-dark);
+      --btn-bg: var(--green-dark);
+      --btn-color: #fff;
+      --shadow-color: rgba(23, 162, 71, 0.4);
+    }
+
+    /* Container */
+    main {
+      background: var(--bg-gradient);
+      max-width: 600px;
+      width: 100%;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 0 20px var(--shadow-color);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      text-align: center;
+      font-weight: 900;
+      font-size: 2.8rem;
+      margin: 0;
+      letter-spacing: 3px;
+      text-shadow: 0 0 10px var(--green);
+      color: var(--text-color);
       user-select: none;
     }
-    
-    /* Animated Gradient Background */
-    @keyframes gradientShift {
-      0% {
-        background-position: 0% 50%;
-      }
-      50% {
-        background-position: 100% 50%;
-      }
-      100% {
-        background-position: 0% 50%;
-      }
-    }
-    body::before {
-      content: "";
+
+    /* Toggle Button */
+    #themeToggle {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(270deg, #0f2027, #203a43, #2c5364, #0f2027);
-      background-size: 800% 800%;
-      animation: gradientShift 30s ease infinite;
-      filter: brightness(0.6);
-      z-index: -1;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: 2px solid var(--btn-bg);
+      color: var(--btn-bg);
+      border-radius: 20px;
+      padding: 0.3rem 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      user-select: none;
     }
-    
-    /* Container with Glassmorphism */
-    .container {
-      background: rgba(255, 255, 255, 0.12);
-      border-radius: 25px;
-      box-shadow:
-        0 8px 32px 0 rgba(31, 38, 135, 0.37),
-        0 0 15px rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      width: 380px;
-      padding: 3rem 2rem 2rem 2rem;
-      text-align: center;
-      color: #f0f0f0;
-      position: relative;
+    #themeToggle:hover {
+      background-color: var(--btn-bg);
+      color: var(--btn-color);
     }
-    
-    /* Title with icon */
-    h1 {
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 700;
-      font-size: 2.8rem;
-      letter-spacing: 0.08em;
-      margin: 0 0 1.5rem 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      color: #00ff9f;
-      text-shadow: 0 0 12px #00ff9f88;
-    }
-    /* Music note SVG icon */
-    h1 svg {
-      width: 38px;
-      height: 38px;
-      fill: #00ff9f;
-      filter: drop-shadow(0 0 6px #00ff9faa);
-      animation: pulse 3s infinite ease-in-out;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.1); opacity: 0.7; }
-    }
-    
-    /* Input field - neumorphic style */
+
+    /* Inputs and buttons */
     input[type="text"] {
       width: 100%;
-      padding: 15px 20px;
-      border-radius: 50px;
-      border: none;
-      font-size: 1rem;
-      font-weight: 500;
-      color: #111;
-      outline: none;
-      background: #e0e0e0;
-      box-shadow:
-        inset 6px 6px 10px #bebebe,
-        inset -6px -6px 10px #ffffff;
-      transition: box-shadow 0.3s ease;
-    }
-    input[type="text"]::placeholder {
-      color: #999;
-      font-style: italic;
+      padding: 0.75rem 1rem;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      border: 2px solid var(--input-border);
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      transition: border-color 0.3s ease;
+      outline-offset: 2px;
+      outline-color: var(--green);
     }
     input[type="text"]:focus {
-      box-shadow:
-        inset 6px 6px 12px #a7a7a7,
-        inset -6px -6px 12px #ffffff;
+      border-color: var(--btn-bg);
+      outline-color: var(--btn-bg);
     }
-    
-    /* Button - neumorphic style */
+
     button {
-      margin-top: 1.2rem;
-      width: 100%;
-      padding: 14px 0;
-      border-radius: 50px;
-      border: none;
-      font-weight: 600;
       font-size: 1.1rem;
-      color: #00ff9f;
-      background: #121212;
+      padding: 0.85rem 0;
+      border-radius: 8px;
+      border: none;
+      background-color: var(--btn-bg);
+      color: var(--btn-color);
+      font-weight: 700;
       cursor: pointer;
-      box-shadow:
-        8px 8px 15px #0a0a0a,
-        -8px -8px 15px #1f1f1f;
-      transition: all 0.25s ease;
-      position: relative;
-      overflow: hidden;
+      box-shadow: 0 5px 10px var(--shadow-color);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
     }
-    button::before {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      background: #00ff9f33;
-      border-radius: 100%;
-      transform: translate(-50%, -50%);
-      transition: width 0.4s ease, height 0.4s ease;
-      z-index: 0;
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
     }
-    button:hover {
-      color: #0d0d0d;
-      background: #00ff9f;
-      box-shadow:
-        0 0 12px #00ff9fcc,
-        inset 0 0 8px #00ff9fcc;
+    button:hover:not(:disabled) {
+      background-color: var(--green-dark);
+      box-shadow: 0 7px 14px var(--shadow-color);
     }
-    button:hover::before {
-      width: 200%;
-      height: 500%;
+    button:focus-visible {
+      outline: 3px solid var(--btn-color);
+      outline-offset: 3px;
     }
-    button:active {
-      transform: scale(0.98);
+
+    /* Login Button */
+    #loginBtn {
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto;
+      display: block;
     }
-    
+
+    /* App container */
+    #app {
+      display: none;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
     /* Results container */
     #results {
-      margin-top: 1.8rem;
-      font-size: 1rem;
-      line-height: 1.4;
-      min-height: 3rem;
-      color: #c7f9cc;
-      user-select: text;
-      max-height: 300px;
+      margin-top: 1rem;
+      max-height: 350px;
       overflow-y: auto;
+      padding-right: 0.5rem;
       scrollbar-width: thin;
-      scrollbar-color: #00ff9f40 transparent;
+      scrollbar-color: var(--green) transparent;
+      border-radius: 8px;
+      background: var(--input-bg);
+      box-shadow: inset 0 0 5px #0004;
     }
     #results::-webkit-scrollbar {
-      width: 6px;
+      width: 8px;
     }
     #results::-webkit-scrollbar-track {
       background: transparent;
     }
     #results::-webkit-scrollbar-thumb {
-      background-color: #00ff9f50;
-      border-radius: 3px;
+      background-color: var(--green);
+      border-radius: 8px;
     }
-    #results a {
-      display: block;
-      color: #a0f7b9;
-      margin-bottom: 0.7rem;
-      font-weight: 600;
-      text-decoration: none;
+
+    /* Each track */
+    .track {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #444;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: background-color 0.2s ease;
+      cursor: pointer;
       border-radius: 6px;
-      padding: 6px 10px;
-      transition: background-color 0.25s ease;
     }
-    #results a:hover {
-      background-color: #00ff9f22;
-      text-decoration: underline;
+    .track:last-child {
+      border-bottom: none;
     }
-    
+    .track:hover, .track:focus {
+      background-color: var(--green-dark);
+      outline: none;
+    }
+
+    .track img {
+      width: 64px;
+      height: 64px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      user-select: none;
+      box-shadow: 0 2px 6px #0009;
+    }
+
+    .track-info {
+      flex-grow: 1;
+      color: var(--text-color);
+      user-select: none;
+    }
+    .track-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin: 0;
+      user-select: text;
+    }
+    .artist-name {
+      font-size: 0.9rem;
+      color: #a0d3a0;
+      margin: 0.2rem 0 0;
+      user-select: text;
+    }
+
+    /* Audio preview */
+    .audio-preview {
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    audio {
+      outline: none;
+      border-radius: 6px;
+      box-shadow: 0 0 5px var(--green);
+    }
+
+    /* Add to playlist button */
+    .add-btn {
+      margin-left: 1rem;
+      background-color: transparent;
+      color: var(--green);
+      border: 2px solid var(--green);
+      padding: 0.3rem 0.6rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    .add-btn:hover {
+      background-color: var(--green);
+      color: var(--btn-color);
+    }
+    .add-btn:focus-visible {
+      outline: 3px solid var(--btn-color);
+      outline-offset: 3px;
+    }
+
+    /* Info / error messages */
+    #message {
+      text-align: center;
+      font-weight: 600;
+      min-height: 1.5rem;
+      user-select: none;
+      font-size: 1.1rem;
+    }
+    #message.error {
+      color: #f44336;
+    }
+    #message.info {
+      color: var(--green);
+    }
+
     /* Loading spinner */
     .spinner {
-      margin: 0 auto;
-      width: 34px;
-      height: 34px;
-      border: 4px solid #00ff9f44;
-      border-top-color: #00ff9f;
+      margin: 2rem auto;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--green);
       border-radius: 50%;
-      animation: spin 1.2s linear infinite;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      user-select: none;
     }
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
     }
-    
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      main {
+        padding: 1.5rem 1rem;
+      }
+      .track img {
+        width: 48px;
+        height: 48px;
+      }
+      .track-name {
+        font-size: 1rem;
+      }
+      .artist-name {
+        font-size: 0.8rem;
+      }
+      button, input[type="text"] {
+        font-size: 1rem;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <div class="container" role="main" aria-label="Feelify music mood finder">
-    <h1>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" >
-        <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/>
-      </svg>
-      Feelify
-    </h1>
+  <button id="themeToggle" aria-label="Toggle light/dark mode">Toggle Light/Dark Mode</button>
+
+  <main role="main" aria-label="Feelify music mood finder app">
+    <h1>Feelify</h1>
 
     <button id="loginBtn" aria-label="Log in with Spotify">Log in with Spotify</button>
 
-    <div id="app" style="display: none;">
+    <section id="app" aria-live="polite" aria-atomic="true">
       <input
         type="text"
         id="moodInput"
-        placeholder="Enter your mood or vibe"
+        placeholder="Enter your mood or vibe (e.g. happy, sad, chill)"
+        aria-label="Mood input"
         autocomplete="off"
-        aria-label="Mood or vibe input"
       />
-      <button id="searchBtn" aria-label="Find songs for mood">Find Songs</button>
-      <div id="results" aria-live="polite" aria-atomic="true"></div>
-    </div>
-  </div>
+      <button id="searchBtn" aria-label="Find songs by mood">Find Songs</button>
+
+      <div id="message" role="alert" aria-live="assertive"></div>
+
+      <div id="results" tabindex="0" aria-label="Song results list"></div>
+
+      <button id="createPlaylistBtn" disabled aria-label="Create playlist with these songs">Create Playlist with Songs</button>
+    </section>
+  </main>
 
   <script>
-    const clientId = 'acb4336604304c339c55eb6db62513ca';
-    const redirectUri = 'https://babaello.github.io/feelify/';
-    const backendUrl = 'https://feelify-backend.onrender.com';
+    // Configuration
+    const clientId = 'acb4336604304c339c55eb6db62513ca'; // Your Spotify client ID
+    const redirectUri = 'https://babaello.github.io/feelify/'; // Your redirect URI
+    const backendUrl = 'https://feelify-backend.onrender.com'; // Your backend URL
 
+    // Elements
     const loginBtn = document.getElementById('loginBtn');
     const appDiv = document.getElementById('app');
     const searchBtn = document.getElementById('searchBtn');
     const moodInput = document.getElementById('moodInput');
     const resultsDiv = document.getElementById('results');
+    const messageDiv = document.getElementById('message');
+    const createPlaylistBtn = document.getElementById('createPlaylistBtn');
+    const themeToggle = document.getElementById('themeToggle');
 
+    // Mood mapping to valence, energy, and genres
+    const moodMap = {
+      happy: { valence: 0.9, energy: 0.8, genres: ['pop'] },
+      sad: { valence: 0.2, energy: 0.3, genres: ['acoustic', 'piano'] },
+      chill: { valence: 0.6, energy: 0.4, genres: ['chill', 'ambient'] },
+      energetic: { valence: 0.8, energy: 0.9, genres: ['dance', 'edm'] },
+      romantic: { valence: 0.7, energy: 0.5, genres: ['rnb', 'soul'] },
+      angry: { valence: 0.3, energy: 0.9, genres: ['metal', 'rock'] }
+    };
+
+    // State variables
+    let accessToken = null;
+    let recommendedTracks = [];
+
+    // Utility: Get mood parameters, fallback to default
+    function getMoodParams(mood) {
+      mood = mood.toLowerCase();
+      return moodMap[mood] || { valence: 0.5, energy: 0.5, genres: ['pop'] };
+    }
+
+    // Utility: Show messages
+    function showMessage(text, type = 'info') {
+      messageDiv.textContent = text;
+      messageDiv.className = type;
+    }
+
+    // Utility: Show loading spinner
+    function showLoading() {
+      resultsDiv.innerHTML = '<div class="spinner" aria-label="Loading"></div>';
+    }
+
+    // Clear results
+    function clearResults() {
+      resultsDiv.innerHTML = '';
+    }
+
+    // Setup theme from localStorage or default
+    function setupTheme() {
+      const saved = localStorage.getItem('feelify-theme');
+      if (saved === 'light') {
+        document.body.classList.add('light');
+        themeToggle.textContent = 'Switch to Dark Mode';
+      } else {
+        document.body.classList.remove('light');
+        themeToggle.textContent = 'Switch to Light Mode';
+      }
+    }
+    setupTheme();
+
+    themeToggle.onclick = () => {
+      document.body.classList.toggle('light');
+      const isLight = document.body.classList.contains('light');
+      localStorage.setItem('feelify-theme', isLight ? 'light' : 'dark');
+      themeToggle.textContent = isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode';
+    };
+
+    // Parse URL to get code
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
-    let accessToken = null;
 
+    // Handle Spotify OAuth callback
     if (code) {
       loginBtn.style.display = 'none';
-      appDiv.style.display = 'block';
+      showMessage('Logging in...');
       fetch(`${backendUrl}/exchange_token?code=${code}`)
         .then(res => res.json())
         .then(data => {
           if (data.access_token) {
             accessToken = data.access_token;
-            resultsDiv.textContent = 'Logged in! Enter your mood to find songs.';
+            showMessage('Logged in! Enter your mood to find songs.');
+            appDiv.style.display = 'flex';
+            createPlaylistBtn.disabled = true;
             history.replaceState(null, '', redirectUri);
           } else {
-            resultsDiv.textContent = 'Error getting access token.';
+            showMessage('Error obtaining access token.', 'error');
           }
         })
         .catch(() => {
-          resultsDiv.textContent = 'Failed to connect to backend.';
+          showMessage('Failed to connect to backend.', 'error');
         });
+    } else {
+      showMessage('Please log in with Spotify to continue.');
     }
 
+    // Login button action
     loginBtn.onclick = () => {
-      const scopes = 'user-read-private user-read-email';
+      const scopes = [
+        'user-read-private',
+        'user-read-email',
+        'playlist-modify-public',
+        'playlist-modify-private',
+      ].join(' ');
       const authUrl =
         `https://accounts.spotify.com/authorize` +
         `?client_id=${clientId}` +
@@ -291,39 +453,75 @@
       window.location.href = authUrl;
     };
 
-    searchBtn.onclick = () => {
-      const mood = moodInput.value.trim();
+    // Create playlist button action
+    createPlaylistBtn.onclick = async () => {
       if (!accessToken) return alert('Please log in first.');
-      if (!mood) return alert('Please enter a mood or vibe.');
 
-      resultsDiv.innerHTML = '<div class="spinner" role="status" aria-label="Loading"></div>';
+      showMessage('Creating playlist...', 'info');
+      createPlaylistBtn.disabled = true;
 
-      fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(mood)}&type=track&limit=10`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      })
-        .then(res => res.json())
-        .then(data => {
-          resultsDiv.innerHTML = '';
-          const tracks = data.tracks?.items || [];
-          if (tracks.length === 0) {
-            resultsDiv.textContent = 'No songs found for that mood.';
-            return;
-          }
-          tracks.forEach(track => {
-            const link = document.createElement('a');
-            link.href = track.external_urls.spotify;
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            link.textContent = `${track.name} — ${track.artists.map(a => a.name).join(', ')}`;
-            resultsDiv.appendChild(link);
-          });
-        })
-        .catch(() => {
-          resultsDiv.textContent = 'Error fetching songs.';
+      try {
+        // Get current user id
+        const userRes = await fetch('https://api.spotify.com/v1/me', {
+          headers: { Authorization: `Bearer ${accessToken}` },
         });
+        const userData = await userRes.json();
+        const userId = userData.id;
+
+        // Create playlist
+        const playlistName = `Feelify Mood Playlist - ${new Date().toLocaleDateString()}`;
+        const createRes = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: playlistName,
+            description: 'Playlist created with Feelify based on your mood',
+            public: false,
+          }),
+        });
+        const playlistData = await createRes.json();
+
+        // Add tracks to playlist
+        const uris = recommendedTracks.map(t => t.uri);
+        const addRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistData.id}/tracks`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ uris }),
+        });
+
+        if (addRes.ok) {
+          showMessage(`Playlist "${playlistName}" created! Check your Spotify account.`, 'info');
+          createPlaylistBtn.disabled = true;
+        } else {
+          showMessage('Failed to add tracks to playlist.', 'error');
+          createPlaylistBtn.disabled = false;
+        }
+      } catch (error) {
+        showMessage('Error creating playlist. Try again.', 'error');
+        createPlaylistBtn.disabled = false;
+      }
     };
-  </script>
-</body>
-</html>
+
+    // Search songs by mood
+    async function searchSongs() {
+      const mood = moodInput.value.trim();
+      if (!accessToken) {
+        alert('Please log in first.');
+        return;
+      }
+      if (!mood) {
+        alert('Please enter a mood or vibe.');
+        return;
+      }
+
+      showLoading();
+      showMessage('');
+
+      const { valence, energy, genres } = getMoodParams(mood);
+      const
