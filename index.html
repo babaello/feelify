@@ -95,7 +95,7 @@ const clientId = '2f0b86bdae1c4886b70ab2574cff5fb0';
 const redirectUri = 'https://babaello.github.io/feelify/';
 const scopes = 'user-read-private user-read-email playlist-read-private';
 
-// Check for access token in URL (Implicit Grant flow)
+// Extract access token from URL hash
 function getTokenFromUrl() {
   const hash = window.location.hash.substring(1);
   const params = new URLSearchParams(hash);
