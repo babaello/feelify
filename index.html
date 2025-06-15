@@ -7,7 +7,6 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap');
 
-    /* Reset & base */
     * {
       box-sizing: border-box;
     }
@@ -22,8 +21,6 @@
       align-items: center;
       padding: 2rem 1rem;
     }
-
-    /* Glass container */
     .container {
       background: rgba(18, 18, 18, 0.6);
       backdrop-filter: blur(12px);
@@ -39,8 +36,6 @@
       gap: 1.8rem;
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
-
-    /* Title */
     h1 {
       font-weight: 600;
       font-size: 2.8rem;
@@ -58,8 +53,6 @@
       font-size: 1.3rem;
       letter-spacing: 0.06em;
     }
-
-    /* Login Button */
     #loginBtn {
       background: linear-gradient(135deg, #1db954, #16a247);
       border: none;
@@ -85,13 +78,9 @@
       transform: translateY(-1px);
       box-shadow: 0 4px 10px rgba(22, 162, 71, 0.7);
     }
-
-    /* Hide app container initially */
     #app {
       display: none;
     }
-
-    /* User Profile Card */
     #userProfile {
       display: flex;
       align-items: center;
@@ -125,8 +114,6 @@
       font-size: 0.85rem;
       color: #a0a0a0;
     }
-
-    /* Mood Input & Search Button */
     #moodInput {
       width: 100%;
       border-radius: 30px;
@@ -150,7 +137,6 @@
       outline: none;
       box-shadow: 0 0 10px #1db954cc;
     }
-
     #searchBtn {
       background: linear-gradient(135deg, #1db954, #16a247);
       border: none;
@@ -177,17 +163,26 @@
       transform: translateY(-1px);
       box-shadow: 0 4px 10px rgba(22, 162, 71, 0.7);
     }
-
-    /* Results and playlists containers */
     #results,
     #playlists {
       display: flex;
       flex-direction: column;
       gap: 1rem;
       margin-top: 0.5rem;
+      max-height: 320px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #1db954 transparent;
     }
-
-    /* Track card */
+    #results::-webkit-scrollbar,
+    #playlists::-webkit-scrollbar {
+      width: 6px;
+    }
+    #results::-webkit-scrollbar-thumb,
+    #playlists::-webkit-scrollbar-thumb {
+      background-color: #1db954;
+      border-radius: 20px;
+    }
     .track {
       background: rgba(18, 18, 18, 0.7);
       backdrop-filter: blur(8px);
@@ -212,7 +207,6 @@
       flex-shrink: 0;
       object-fit: cover;
     }
-
     .track-info {
       flex-grow: 1;
       display: flex;
@@ -236,8 +230,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
-    /* Play & Add buttons */
     .play-btn,
     .add-btn {
       border: none;
@@ -254,8 +246,6 @@
     .add-btn:hover {
       color: #16a247;
     }
-
-    /* Section headings */
     section > h2 {
       margin-top: 1.5rem;
       color: #a1a1a1;
@@ -263,8 +253,6 @@
       font-size: 1.3rem;
       letter-spacing: 0.06em;
     }
-
-    /* Responsive */
     @media (max-width: 480px) {
       .container {
         padding: 1.5rem 1.8rem 2.2rem;
@@ -289,11 +277,11 @@
 </head>
 <body>
 
-  <div class="container">
+  <div class="container" role="main" aria-live="polite">
     <h1>Feelify</h1>
     <button id="loginBtn" aria-label="Log in with Spotify">Log in with Spotify</button>
 
-    <div id="app" role="main" aria-live="polite">
+    <div id="app" aria-live="polite" tabindex="-1">
       <div id="userProfile" aria-label="User profile info"></div>
 
       <input
@@ -308,19 +296,381 @@
 
       <section>
         <h2>Song Results</h2>
-        <div id="results" aria-live="polite"></div>
+        <div id="results"></div>
       </section>
 
       <section>
         <h2>Your Playlists</h2>
-        <div id="playlists" aria-live="polite"></div>
+        <div id="playlists"></div>
       </section>
     </div>
   </div>
 
   <script>
-    // Same JS logic as before, just make sure this script matches your backend URLs and tokens
-    // For brevity, omitted here to keep focus on UI styles and markup
+    // === CONFIGURATION ===
+    const backendBaseUrl = 'https://your-backend-url.com'; // CHANGE to your backend URL
+    const spotifyClientId = 'YOUR_SPOTIFY_CLIENT_ID'; // CHANGE to your Spotify client ID
+    const redirectUri = window.location.origin + window.location.pathname; // Current page, no query params
+
+    // === UTILS ===
+    function generateRandomString(length) {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let result = '';
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
+    function parseQueryParams() {
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+      let params = {};
+      for (const [key, value] of urlParams.entries()) {
+        params[key] = value;
+      }
+      return params;
+    }
+
+    function clearQueryParams() {
+      if (window.history && window.history.replaceState) {
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    }
+
+    // === SPOTIFY AUTH ===
+    const scopes = [
+      'user-read-private',
+      'user-read-email',
+      'playlist-read-private',
+      'playlist-modify-public',
+      'playlist-modify-private',
+      'user-library-modify',
+      'user-read-playback-state',
+      'user-modify-playback-state'
+    ];
+
+    let accessToken = null;
+    let refreshToken = null;
+    let tokenExpiryTime = null;
+
+    const loginBtn = document.getElementById('loginBtn');
+    const appDiv = document.getElementById('app');
+    const userProfileDiv = document.getElementById('userProfile');
+    const moodInput = document.getElementById('moodInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const resultsDiv = document.getElementById('results');
+    const playlistsDiv = document.getElementById('playlists');
+
+    let audio = new Audio();
+    let currentPlayingTrackId = null;
+
+    // PKCE flow helpers
+    async function sha256(plain) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(plain);
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      return new Uint8Array(hash);
+    }
+
+    function base64UrlEncode(arrayBuffer) {
+      return btoa(String.fromCharCode.apply(null, arrayBuffer))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    async function generateCodeChallenge(codeVerifier) {
+      const hashed = await sha256(codeVerifier);
+      return base64UrlEncode(hashed);
+    }
+
+    async function startLogin() {
+      const state = generateRandomString(16);
+      const codeVerifier = generateRandomString(64);
+      sessionStorage.setItem('pkce_code_verifier', codeVerifier);
+      sessionStorage.setItem('oauth_state', state);
+
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
+      const scope = scopes.join(' ');
+
+      const authUrl = `https://accounts.spotify.com/authorize?client_id=${encodeURIComponent(spotifyClientId)}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&state=${state}&code_challenge_method=S256&code_challenge=${codeChallenge}`;
+
+      window.location = authUrl;
+    }
+
+    async function exchangeToken(code) {
+      const codeVerifier = sessionStorage.getItem('pkce_code_verifier');
+      try {
+        const res = await fetch(`${backendBaseUrl}/exchange_token?code=${encodeURIComponent(code)}`, {
+          method: 'GET',
+        });
+        if (!res.ok) throw new Error('Failed to exchange token');
+        const data = await res.json();
+        accessToken = data.access_token;
+        refreshToken = data.refresh_token;
+        tokenExpiryTime = Date.now() + (data.expires_in * 1000);
+        sessionStorage.setItem('access_token', accessToken);
+        sessionStorage.setItem('refresh_token', refreshToken);
+        sessionStorage.setItem('token_expiry', tokenExpiryTime);
+        sessionStorage.removeItem('pkce_code_verifier');
+        sessionStorage.removeItem('oauth_state');
+        clearQueryParams();
+        return true;
+      } catch (err) {
+        alert('Error during token exchange: ' + err.message);
+        return false;
+      }
+    }
+
+    async function refreshAccessToken() {
+      if (!refreshToken) return false;
+      try {
+        const res = await fetch(`${backendBaseUrl}/refresh_token?refresh_token=${refreshToken}`, { method: 'GET' });
+        if (!res.ok) throw new Error('Failed to refresh token');
+        const data = await res.json();
+        accessToken = data.access_token;
+        tokenExpiryTime = Date.now() + (data.expires_in * 1000);
+        sessionStorage.setItem('access_token', accessToken);
+        sessionStorage.setItem('token_expiry', tokenExpiryTime);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    async function ensureTokenValid() {
+      if (!accessToken) return false;
+      if (Date.now() > tokenExpiryTime - 60000) {
+        // token expiring soon, refresh
+        const refreshed = await refreshAccessToken();
+        if (!refreshed) {
+          logout();
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // === UI Updates ===
+
+    async function fetchUserProfile() {
+      await ensureTokenValid();
+      try {
+        const res = await fetch('https://api.spotify.com/v1/me', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!res.ok) throw new Error('Failed to get user profile');
+        const data = await res.json();
+        renderUserProfile(data);
+        await fetchUserPlaylists();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function renderUserProfile(user) {
+      userProfileDiv.innerHTML = `
+        <img src="${user.images[0]?.url || 'https://via.placeholder.com/68'}" alt="User avatar" />
+        <div>
+          <strong>${user.display_name}</strong>
+          <small>${user.email}</small>
+        </div>
+      `;
+    }
+
+    async function fetchUserPlaylists() {
+      await ensureTokenValid();
+      try {
+        const res = await fetch('https://api.spotify.com/v1/me/playlists?limit=10', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!res.ok) throw new Error('Failed to get playlists');
+        const data = await res.json();
+        renderPlaylists(data.items);
+      } catch (err) {
+        playlistsDiv.innerHTML = `<em>Could not load playlists</em>`;
+      }
+    }
+
+    function renderPlaylists(playlists) {
+      playlistsDiv.innerHTML = '';
+      if (playlists.length === 0) {
+        playlistsDiv.innerHTML = '<em>No playlists found</em>';
+        return;
+      }
+      playlists.forEach(pl => {
+        const plEl = document.createElement('div');
+        plEl.className = 'track';
+        plEl.innerHTML = `
+          <img src="${pl.images[0]?.url || 'https://via.placeholder.com/68'}" alt="Playlist cover" />
+          <div class="track-info" title="${pl.name}">
+            <div class="track-title">${pl.name}</div>
+            <div class="track-artists">${pl.tracks.total} tracks</div>
+          </div>
+        `;
+        playlistsDiv.appendChild(plEl);
+      });
+    }
+
+    // === Mood Search ===
+
+    async function searchMoodTracks(mood) {
+      mood = mood.trim();
+      if (!mood) {
+        alert('Please enter a mood or vibe');
+        return;
+      }
+      resultsDiv.innerHTML = '<em>Loading tracks...</em>';
+      try {
+        // Your backend endpoint for mood search
+        const res = await fetch(`${backendBaseUrl}/mood_search?mood=${encodeURIComponent(mood)}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!res.ok) throw new Error('Failed to search tracks for mood');
+        const data = await res.json();
+        renderTracks(data.tracks);
+      } catch (err) {
+        resultsDiv.innerHTML = `<em>Error: ${err.message}</em>`;
+      }
+    }
+
+    function renderTracks(tracks) {
+      resultsDiv.innerHTML = '';
+      if (!tracks || tracks.length === 0) {
+        resultsDiv.innerHTML = '<em>No tracks found for that mood.</em>';
+        return;
+      }
+      tracks.forEach(track => {
+        const trackEl = document.createElement('div');
+        trackEl.className = 'track';
+        trackEl.setAttribute('data-track-id', track.id);
+
+        trackEl.innerHTML = `
+          <img src="${track.album.images[0]?.url || 'https://via.placeholder.com/68'}" alt="Album art" />
+          <div class="track-info" title="${track.name} by ${track.artists.map(a => a.name).join(', ')}">
+            <div class="track-title">${track.name}</div>
+            <div class="track-artists">${track.artists.map(a => a.name).join(', ')}</div>
+          </div>
+          <button class="play-btn" aria-label="Play preview">&#9658;</button>
+          <button class="add-btn" aria-label="Add to playlist">+</button>
+        `;
+
+        const playBtn = trackEl.querySelector('.play-btn');
+        const addBtn = trackEl.querySelector('.add-btn');
+
+        playBtn.onclick = () => {
+          if (currentPlayingTrackId === track.id) {
+            audio.pause();
+            currentPlayingTrackId = null;
+            playBtn.innerHTML = '&#9658;';
+          } else {
+            playTrackPreview(track.preview_url, playBtn, track.id);
+          }
+        };
+
+        addBtn.onclick = () => {
+          promptAddToPlaylist(track.id, track.name);
+        };
+
+        resultsDiv.appendChild(trackEl);
+      });
+    }
+
+    function playTrackPreview(previewUrl, btn, trackId) {
+      if (!previewUrl) {
+        alert('No preview available for this track.');
+        return;
+      }
+      if (currentPlayingTrackId && currentPlayingTrackId !== trackId) {
+        audio.pause();
+        // Reset old play button icons
+        [...document.querySelectorAll('.play-btn')].forEach(b => (b.innerHTML = '&#9658;'));
+      }
+
+      if (audio.paused || currentPlayingTrackId !== trackId) {
+        audio.src = previewUrl;
+        audio.play();
+        btn.innerHTML = '&#10074;&#10074;';
+        currentPlayingTrackId = trackId;
+      } else {
+        audio.pause();
+        btn.innerHTML = '&#9658;';
+        currentPlayingTrackId = null;
+      }
+
+      audio.onended = () => {
+        btn.innerHTML = '&#9658;';
+        currentPlayingTrackId = null;
+      };
+    }
+
+    async function promptAddToPlaylist(trackId, trackName) {
+      // Fetch playlists again to make sure fresh
+      await ensureTokenValid();
+      let playlistId = prompt('Enter Playlist ID to add "' + trackName + '" to:\n(To get playlist ID: open your playlist in Spotify and copy the last part of the URL after /playlist/ )');
+      if (!playlistId) return;
+
+      try {
+        const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            uris: [`spotify:track:${trackId}`],
+          }),
+        });
+        if (!res.ok) throw new Error('Failed to add track to playlist');
+        alert(`Added "${trackName}" to playlist!`);
+      } catch (err) {
+        alert('Error adding to playlist: ' + err.message);
+      }
+    }
+
+    // === Main flow ===
+
+    loginBtn.onclick = () => startLogin();
+
+    async function main() {
+      // Check if redirected back from Spotify auth with code
+      const params = parseQueryParams();
+
+      if (params.error) {
+        alert('Spotify authorization error: ' + params.error);
+        clearQueryParams();
+        return;
+      }
+
+      if (params.code) {
+        // exchange token via backend
+        const exchanged = await exchangeToken(params.code);
+        if (exchanged) {
+          loginBtn.style.display = 'none';
+          appDiv.style.display = 'flex';
+          await fetchUserProfile();
+          moodInput.focus();
+        }
+        return;
+      }
+
+      // Check if tokens stored in sessionStorage
+      accessToken = sessionStorage.getItem('access_token');
+      refreshToken = sessionStorage.getItem('refresh_token');
+      tokenExpiryTime = parseInt(sessionStorage.getItem('token_expiry'), 10);
+
+      if (accessToken && tokenExpiryTime && Date.now() < tokenExpiryTime) {
+        loginBtn.style.display = 'none';
+        appDiv.style.display = 'flex';
+        await fetchUserProfile();
+        moodInput.focus();
+      }
+    }
+
+    searchBtn.onclick = () => searchMoodTracks(moodInput.value);
+
+    main();
   </script>
+
 </body>
 </html>
