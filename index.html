@@ -3,663 +3,616 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Feelify - Mood-Based Music Discovery</title>
+  <title>Feelify – Songs for Your Mood</title>
   <style>
-    /* CSS Variables for light/dark mode */
-    :root {
-      --bg-color: #121212;
-      --text-color: #fff;
-      --accent-color: #1DB954;
-      --input-bg: #222;
-      --input-text: #eee;
-      --btn-bg: #1DB954;
-      --btn-hover-bg: #159243;
-      --link-color: #1DB954;
-      --shadow-color: rgba(0, 0, 0, 0.7);
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap');
+    * {
+      box-sizing: border-box;
     }
-    [data-theme='light'] {
-      --bg-color: #fefefe;
-      --text-color: #222;
-      --accent-color: #1DB954;
-      --input-bg: #eee;
-      --input-text: #111;
-      --btn-bg: #1DB954;
-      --btn-hover-bg: #159243;
-      --link-color: #1DB954;
-      --shadow-color: rgba(0, 0, 0, 0.2);
-    }
-
     body {
-      background: var(--bg-color);
-      color: var(--text-color);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      max-width: 650px;
-      margin: 1.5rem auto;
-      padding: 1rem 1.5rem 3rem;
+      margin: 0; 
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #1DB954, #191414);
+      color: #eee;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 1rem 1.5rem;
       user-select: none;
-      transition: background 0.3s, color 0.3s;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
     }
-
     h1 {
-      color: var(--accent-color);
-      font-weight: 900;
-      font-size: 3rem;
+      color: #fff;
+      font-weight: 600;
+      letter-spacing: 2px;
       text-align: center;
-      margin-bottom: 0.25rem;
+      margin-bottom: 1rem;
       user-select: text;
     }
-
-    #loginBtn, #searchBtn, #createPlaylistBtn, #toggleThemeBtn {
-      cursor: pointer;
+    button, input, select {
+      font-family: inherit;
+      font-weight: 600;
       font-size: 1.1rem;
-      font-weight: 700;
-      background-color: var(--btn-bg);
-      border: none;
-      border-radius: 25px;
-      padding: 0.65rem 1.5rem;
-      color: white;
-      width: 100%;
-      margin: 0.8rem 0 1rem;
-      box-shadow: 0 6px 12px var(--shadow-color);
-      transition: background-color 0.25s ease;
-      user-select: none;
-      display: inline-block;
-    }
-
-    #loginBtn:hover, #searchBtn:hover, #createPlaylistBtn:hover, #toggleThemeBtn:hover {
-      background-color: var(--btn-hover-bg);
-    }
-
-    input[type="text"] {
-      width: 100%;
-      padding: 0.8rem 1rem;
-      font-size: 1.15rem;
+      padding: 0.6rem 1rem;
+      margin: 0.4rem 0;
       border-radius: 30px;
       border: none;
-      background-color: var(--input-bg);
-      color: var(--input-text);
-      box-shadow: inset 1px 1px 5px rgba(0,0,0,0.7);
-      user-select: text;
-      transition: background-color 0.3s, color 0.3s;
+      outline: none;
+      transition: all 0.3s ease;
+      width: 100%;
+      max-width: 100%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      cursor: pointer;
     }
-
-    input[type="text"]::placeholder {
-      color: var(--input-text);
-      opacity: 0.7;
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
     }
-
+    button:hover:not(:disabled) {
+      filter: brightness(1.2);
+      box-shadow: 0 4px 15px rgba(29, 185, 84, 0.75);
+    }
+    input {
+      border: 2px solid #1DB954;
+      background: rgba(255, 255, 255, 0.1);
+      color: #eee;
+      padding-left: 1rem;
+    }
+    #loginBtn {
+      background: #1DB954;
+      color: #111;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    #app {
+      display: none;
+    }
     #results {
       margin-top: 1rem;
-      user-select: text;
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 0.5rem 1rem;
     }
-
-    .song-item {
+    .track {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      background: var(--input-bg);
-      padding: 0.6rem 1rem;
-      border-radius: 16px;
-      margin-bottom: 0.5rem;
-      box-shadow: 0 4px 8px var(--shadow-color);
-      transition: background-color 0.2s;
+      margin-bottom: 0.8rem;
+      padding: 0.6rem;
+      border-radius: 8px;
+      background: rgba(255 255 255 / 0.05);
+      transition: background 0.3s ease;
+      user-select: none;
     }
-
-    .song-item.voted {
-      border: 2px solid var(--accent-color);
-      box-shadow: 0 0 15px var(--accent-color);
+    .track:hover {
+      background: rgba(29,185,84,0.2);
     }
-
-    .song-info {
-      flex: 1;
-      cursor: pointer;
+    .track img {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      margin-right: 1rem;
+      flex-shrink: 0;
+      box-shadow: 0 0 6px #1DB954;
+    }
+    .track-info {
+      flex-grow: 1;
+      overflow: hidden;
+    }
+    .track-info a {
+      color: #1DB954;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
       user-select: text;
     }
-
-    .song-info:hover {
-      text-decoration: underline;
+    .track-info small {
+      display: block;
+      color: #bbb;
+      font-weight: 300;
+      font-size: 0.85rem;
+      margin-top: 0.15rem;
+      user-select: text;
     }
-
-    .vote-btn {
-      background-color: transparent;
-      border: none;
-      color: var(--accent-color);
-      font-size: 1.3rem;
-      cursor: pointer;
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-left: 1rem;
+      flex-shrink: 0;
+    }
+    .actions button {
+      padding: 0.3rem 0.5rem;
+      font-size: 1rem;
+      border-radius: 50%;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       user-select: none;
-      transition: transform 0.15s;
-      padding: 0 0.3rem;
+      background: rgba(29,185,84,0.9);
+      color: #111;
+      font-weight: 700;
+    }
+    .actions button:hover {
+      background: #1ed760;
+      color: #000;
+    }
+    #message {
+      margin-top: 0.6rem;
+      font-weight: 500;
+      text-align: center;
+      min-height: 1.2rem;
+      user-select: none;
+    }
+    #player {
+      margin-top: 1rem;
+      width: 100%;
+      height: 80px;
+      border-radius: 15px;
+      background: rgba(0,0,0,0.3);
       display: flex;
       align-items: center;
       justify-content: center;
     }
-
-    .vote-btn:hover {
-      transform: scale(1.3);
-    }
-
-    .vote-btn.voted {
-      color: #44ff66;
-      text-shadow: 0 0 8px #44ff66;
-    }
-
-    .preview-player {
-      margin-top: 0.25rem;
-      width: 100%;
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 4px 14px var(--shadow-color);
-      user-select: none;
-    }
-
-    #historyPanel {
-      background: var(--input-bg);
-      border-radius: 16px;
-      padding: 1rem;
-      margin-top: 2rem;
-      max-height: 180px;
-      overflow-y: auto;
-      box-shadow: 0 6px 14px var(--shadow-color);
-    }
-
-    #historyPanel h2 {
-      margin-top: 0;
-      font-weight: 700;
-      color: var(--accent-color);
-      user-select: text;
-    }
-
-    #historyPanel button {
-      margin: 0.2rem 0;
-      padding: 0.4rem 0.8rem;
-      background: transparent;
-      border: 1.5px solid var(--accent-color);
-      border-radius: 12px;
-      color: var(--accent-color);
-      cursor: pointer;
-      font-weight: 700;
-      user-select: none;
-      width: 100%;
-      text-align: left;
-      font-size: 0.9rem;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    #historyPanel button:hover {
-      background-color: var(--accent-color);
-      color: var(--bg-color);
-    }
-
-    #message {
+    #createPlaylistBtn {
       margin-top: 1rem;
-      font-style: italic;
-      text-align: center;
-      min-height: 1.4rem;
-      user-select: text;
-      color: #aaa;
+      background: #191414;
+      color: #1DB954;
+      font-weight: 700;
+      border: 2px solid #1DB954;
     }
-
     #shareLinks {
       margin-top: 1rem;
       text-align: center;
     }
-
     #shareLinks a {
-      margin: 0 0.5rem;
-      color: var(--accent-color);
-      font-weight: 700;
+      margin: 0 0.4rem;
+      color: #1DB954;
       text-decoration: none;
-      user-select: none;
-      font-size: 1.2rem;
-      transition: color 0.3s;
+      font-weight: 600;
     }
-
     #shareLinks a:hover {
       text-decoration: underline;
-      color: #44ff66;
     }
-
-    /* Responsive */
-    @media (max-width: 480px) {
-      body {
-        margin: 1rem;
-      }
-      h1 {
-        font-size: 2.2rem;
-      }
+    /* Scrollbar */
+    #results::-webkit-scrollbar {
+      width: 8px;
+    }
+    #results::-webkit-scrollbar-thumb {
+      background: #1DB954;
+      border-radius: 4px;
     }
   </style>
 </head>
-<body data-theme="dark">
+<body>
 
   <h1>Feelify</h1>
-
-  <button id="toggleThemeBtn" title="Toggle Light/Dark Mode">Toggle Dark Mode</button>
-
   <button id="loginBtn">Log in with Spotify</button>
 
-  <div id="app" style="display:none;">
+  <div id="app">
     <input type="text" id="moodInput" placeholder="Enter your mood or vibe" autocomplete="off" />
     <button id="searchBtn">Find Songs</button>
-    <button id="createPlaylistBtn" disabled>Create Playlist From Voted Songs</button>
-
+    <button id="createPlaylistBtn" disabled>Create Playlist from Results</button>
     <div id="message"></div>
     <div id="results"></div>
-
-    <div id="shareLinks" style="display:none;">
-      <strong>Share your mood:</strong>
-      <a href="#" id="shareTwitter" target="_blank" rel="noopener">🐦 Twitter</a>
-      <a href="#" id="shareFacebook" target="_blank" rel="noopener">📘 Facebook</a>
-      <a href="#" id="shareLink" target="_blank" rel="noopener">🔗 Copy Link</a>
-    </div>
-
-    <div id="historyPanel">
-      <h2>Recent Mood Searches</h2>
-      <div id="historyList"></div>
-    </div>
+    <div id="player"></div>
+    <div id="shareLinks"></div>
   </div>
 
-  <script>
-    (function () {
-      // Config
-      const clientId = 'acb4336604304c339c55eb6db62513ca';
-      const redirectUri = 'https://babaello.github.io/feelify/';
-      const backendUrl = 'https://feelify-backend.onrender.com';
+<script>
+  const clientId = 'acb4336604304c339c55eb6db62513ca';
+  const redirectUri = 'https://babaello.github.io/feelify/';
+  const backendUrl = 'https://feelify-backend.onrender.com';
 
-      // Elements
-      const loginBtn = document.getElementById('loginBtn');
-      const appDiv = document.getElementById('app');
-      const searchBtn = document.getElementById('searchBtn');
-      const moodInput = document.getElementById('moodInput');
-      const resultsDiv = document.getElementById('results');
-      const messageDiv = document.getElementById('message');
-      const createPlaylistBtn = document.getElementById('createPlaylistBtn');
-      const toggleThemeBtn = document.getElementById('toggleThemeBtn');
-      const historyList = document.getElementById('historyList');
-      const shareLinks = document.getElementById('shareLinks');
-      const shareTwitter = document.getElementById('shareTwitter');
-      const shareFacebook = document.getElementById('shareFacebook');
-      const shareLink = document.getElementById('shareLink');
+  const loginBtn = document.getElementById('loginBtn');
+  const appDiv = document.getElementById('app');
+  const searchBtn = document.getElementById('searchBtn');
+  const createPlaylistBtn = document.getElementById('createPlaylistBtn');
+  const moodInput = document.getElementById('moodInput');
+  const resultsDiv = document.getElementById('results');
+  const messageDiv = document.getElementById('message');
+  const playerDiv = document.getElementById('player');
+  const shareLinksDiv = document.getElementById('shareLinks');
 
-      let accessToken = null;
-      let currentMood = '';
-      let songsData = [];
-      let votes = {}; // songURI -> vote count
+  let accessToken = null;
+  let currentTracks = [];
+  let currentMood = null;
+  let votes = {}; // trackId -> upvotes/downvotes count
 
-      // --- Theme handling ---
-      function setTheme(theme) {
-        document.body.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        toggleThemeBtn.textContent = theme === 'dark' ? 'Toggle Light Mode' : 'Toggle Dark Mode';
-      }
+  // Mood to audio features mapping for Spotify Recommendations API
+  const moodFeaturesMap = {
+    happy: { target_valence: 0.9, target_energy: 0.8, target_danceability: 0.75 },
+    sad: { target_valence: 0.2, target_energy: 0.3, target_danceability: 0.25 },
+    relaxed: { target_valence: 0.7, target_energy: 0.35, target_danceability: 0.4 },
+    energetic: { target_valence: 0.8, target_energy: 0.9, target_danceability: 0.85 },
+    calm: { target_valence: 0.6, target_energy: 0.2, target_danceability: 0.35 },
+    angry: { target_valence: 0.3, target_energy: 0.9, target_danceability: 0.55 },
+    chill: { target_valence: 0.75, target_energy: 0.35, target_danceability: 0.55 },
+    romantic: { target_valence: 0.85, target_energy: 0.5, target_danceability: 0.6 },
+    dreamy: { target_valence: 0.8, target_energy: 0.3, target_danceability: 0.5 },
+    lonely: { target_valence: 0.25, target_energy: 0.2, target_danceability: 0.3 }
+  };
 
-      toggleThemeBtn.onclick = () => {
-        const current = document.body.getAttribute('data-theme');
-        setTheme(current === 'dark' ? 'light' : 'dark');
-      };
+  // Synonyms mapping to normalize user input
+  const moodSynonyms = {
+    glad: 'happy',
+    joyful: 'happy',
+    sorrowful: 'sad',
+    depressed: 'sad',
+    mellow: 'relaxed',
+    peaceful: 'calm',
+    furious: 'angry',
+    upset: 'angry',
+    loving: 'romantic',
+    dreamy: 'dreamy',
+    alone: 'lonely',
+    lonely: 'lonely',
+    chilled: 'chill',
+    energetic: 'energetic',
+    hype: 'energetic',
+  };
 
-      // Load theme from localStorage
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      setTheme(savedTheme);
+  // Extract code from URL query params on load
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
 
-      // --- OAuth Login ---
-
-      // Scopes including playlist creation
-      const scopes = [
-        'user-read-private',
-        'user-read-email',
-        'playlist-modify-public',
-        'playlist-modify-private',
-      ].join(' ');
-
-      function getCodeFromUrl() {
-        const params = new URLSearchParams(window.location.search);
-        return params.get('code');
-      }
-
-      async function exchangeCodeForToken(code) {
-        try {
-          const res = await fetch(`${backendUrl}/exchange_token?code=${code}`);
-          if (!res.ok) throw new Error('Failed token exchange');
-          const data = await res.json();
-          if (data.access_token) {
-            accessToken = data.access_token;
-            return true;
-          }
-          throw new Error('No access token received');
-        } catch (e) {
-          showMessage('Login failed, please try again.');
-          console.error(e);
-          return false;
-        }
-      }
-
-      function showMessage(text, isError = false) {
-        messageDiv.textContent = text;
-        messageDiv.style.color = isError ? 'tomato' : 'lightgreen';
-      }
-
-      // --- Search with NLP Synonyms using Datamuse API ---
-      async function getSynonyms(word) {
-        try {
-          const res = await fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(word)}`);
-          if (!res.ok) return [];
-          const data = await res.json();
-          // Return max 5 synonyms, filter out phrases
-          return data.filter(w => !w.word.includes(' ')).slice(0, 5).map(w => w.word);
-        } catch {
-          return [];
-        }
-      }
-
-      // Build query string with synonyms
-      async function buildSearchQuery(mood) {
-        const synonyms = await getSynonyms(mood);
-        const queryWords = [mood, ...synonyms];
-        // Also add mood words lowercased and with some fuzziness
-        return queryWords.map(w => `${w}`).join(' ');
-      }
-
-      // --- Search Tracks ---
-      async function searchTracks(mood) {
-        if (!accessToken) {
-          alert('Please log in first.');
-          return;
-        }
-        showMessage('Searching songs for mood: ' + mood);
-        resultsDiv.innerHTML = '';
-        createPlaylistBtn.disabled = true;
-
-        const query = await buildSearchQuery(mood);
-        try {
-          const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=20`, {
-            headers: { Authorization: 'Bearer ' + accessToken }
-          });
-          if (!res.ok) {
-            if (res.status === 401) {
-              showMessage('Session expired. Please log in again.', true);
-              logout();
-              return;
-            }
-            throw new Error('Spotify API error');
-          }
-          const data = await res.json();
-          songsData = data.tracks.items || [];
-
-          if (songsData.length === 0) {
-            showMessage('No songs found for that mood.', true);
-            return;
-          }
-
-          // Reset votes for new songs
-          votes = {};
-
-          displaySongs(songsData);
-          createPlaylistBtn.disabled = true;
-
-          showMessage('Found ' + songsData.length + ' songs for mood: ' + mood);
-
-          // Save mood history
-          saveMoodSearch(mood);
-          renderMoodHistory();
-
-          // Show share buttons
-          setupShareLinks(mood);
-          shareLinks.style.display = 'block';
-        } catch (err) {
-          showMessage('Error fetching songs.', true);
-          console.error(err);
-        }
-      }
-
-      // --- Display Songs with voting and preview ---
-      function displaySongs(tracks) {
-        resultsDiv.innerHTML = '';
-
-        tracks.forEach(track => {
-          const songDiv = document.createElement('div');
-          songDiv.className = 'song-item';
-          songDiv.dataset.uri = track.uri;
-          songDiv.dataset.voted = 'false';
-
-          // Song info: name — artists
-          const infoDiv = document.createElement('div');
-          infoDiv.className = 'song-info';
-          infoDiv.textContent = `${track.name} — ${track.artists.map(a => a.name).join(', ')}`;
-          infoDiv.title = 'Click to open in Spotify';
-          infoDiv.onclick = () => window.open(track.external_urls.spotify, '_blank');
-
-          // Vote button
-          const voteBtn = document.createElement('button');
-          voteBtn.className = 'vote-btn';
-          voteBtn.innerHTML = '👍';
-          voteBtn.title = 'Vote for this song';
-
-          voteBtn.onclick = () => {
-            const voted = songDiv.dataset.voted === 'true';
-            if (!voted) {
-              votes[track.uri] = (votes[track.uri] || 0) + 1;
-              songDiv.dataset.voted = 'true';
-              voteBtn.classList.add('voted');
-              songDiv.classList.add('voted');
-              createPlaylistBtn.disabled = false;
-            } else {
-              votes[track.uri] = Math.max((votes[track.uri] || 1) - 1, 0);
-              if (votes[track.uri] === 0) {
-                delete votes[track.uri];
-                songDiv.dataset.voted = 'false';
-                voteBtn.classList.remove('voted');
-                songDiv.classList.remove('voted');
-              }
-              // Disable playlist button if no votes
-              createPlaylistBtn.disabled = Object.keys(votes).length === 0;
-            }
-            sortSongsByVotes();
-          };
-
-          // Preview audio player (30s preview)
-          const previewUrl = track.preview_url;
-          let playerIframe = null;
-          if (previewUrl) {
-            playerIframe = document.createElement('audio');
-            playerIframe.className = 'preview-player';
-            playerIframe.controls = true;
-            playerIframe.src = previewUrl;
-          }
-
-          songDiv.appendChild(infoDiv);
-          songDiv.appendChild(voteBtn);
-          if (playerIframe) songDiv.appendChild(playerIframe);
-
-          resultsDiv.appendChild(songDiv);
-        });
-      }
-
-      // --- Sort songs by votes ---
-      function sortSongsByVotes() {
-        const items = Array.from(resultsDiv.children);
-        items.sort((a, b) => {
-          const aVotes = votes[a.dataset.uri] || 0;
-          const bVotes = votes[b.dataset.uri] || 0;
-          return bVotes - aVotes;
-        });
-        items.forEach(item => resultsDiv.appendChild(item));
-      }
-
-      // --- Create Playlist from voted songs ---
-      async function createPlaylist() {
-        if (!accessToken) {
-          alert('Please log in first.');
-          return;
-        }
-
-        const votedUris = Object.keys(votes);
-        if (votedUris.length === 0) {
-          alert('Vote for some songs first!');
-          return;
-        }
-
-        createPlaylistBtn.disabled = true;
-        showMessage('Creating playlist...');
-
-        try {
-          // Get current user ID
-          const userRes = await fetch('https://api.spotify.com/v1/me', {
-            headers: { Authorization: 'Bearer ' + accessToken }
-          });
-          if (!userRes.ok) throw new Error('Failed to fetch user info');
-          const userData = await userRes.json();
-
-          // Create new playlist
-          const playlistName = `Feelify Mood Playlist: ${currentMood}`;
-          const createRes = await fetch(`https://api.spotify.com/v1/users/${userData.id}/playlists`, {
-            method: 'POST',
-            headers: {
-              Authorization: 'Bearer ' + accessToken,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              name: playlistName,
-              description: `Generated with Feelify for mood: ${currentMood}`,
-              public: false,
-            }),
-          });
-          if (!createRes.ok) throw new Error('Failed to create playlist');
-          const playlistData = await createRes.json();
-
-          // Add tracks
-          const addRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistData.id}/tracks`, {
-            method: 'POST',
-            headers: {
-              Authorization: 'Bearer ' + accessToken,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ uris: votedUris }),
-          });
-          if (!addRes.ok) throw new Error('Failed to add tracks');
-
-          showMessage(`Playlist created! View it on Spotify.`);
-          createPlaylistBtn.disabled = false;
-
-          // Open playlist on Spotify
-          window.open(playlistData.external_urls.spotify, '_blank');
-        } catch (err) {
-          showMessage('Error creating playlist.', true);
-          createPlaylistBtn.disabled = false;
-          console.error(err);
-        }
-      }
-
-      // --- Save and Load Mood Search History ---
-      function saveMoodSearch(mood) {
-        if (!mood) return;
-        let history = JSON.parse(localStorage.getItem('moodHistory') || '[]');
-        if (!history.includes(mood.toLowerCase())) {
-          history.unshift(mood.toLowerCase());
-          if (history.length > 10) history.pop();
-          localStorage.setItem('moodHistory', JSON.stringify(history));
-        }
-      }
-
-      function renderMoodHistory() {
-        const history = JSON.parse(localStorage.getItem('moodHistory') || '[]');
-        historyList.innerHTML = '';
-        if (history.length === 0) {
-          historyList.textContent = 'No previous moods searched.';
-          return;
-        }
-        history.forEach(m => {
-          const btn = document.createElement('button');
-          btn.textContent = m;
-          btn.onclick = () => {
-            moodInput.value = m;
-            doSearch();
-          };
-          historyList.appendChild(btn);
-        });
-      }
-
-      // --- Share Links ---
-      function setupShareLinks(mood) {
-        const url = encodeURIComponent(window.location.href);
-        const text = encodeURIComponent(`I'm feeling "${mood}" and found awesome music with Feelify! 🎵`);
-
-        shareTwitter.href = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
-        shareFacebook.href = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-        shareLink.onclick = (e) => {
-          e.preventDefault();
-          navigator.clipboard.writeText(window.location.href).then(() => {
-            alert('Link copied to clipboard!');
-          });
-        };
-      }
-
-      // --- Logout (Clear tokens & UI) ---
-      function logout() {
-        accessToken = null;
-        loginBtn.style.display = 'inline-block';
-        appDiv.style.display = 'none';
-        resultsDiv.innerHTML = '';
-        messageDiv.textContent = '';
-        createPlaylistBtn.disabled = true;
-        shareLinks.style.display = 'none';
-        window.history.replaceState({}, document.title, '/'); // clear code from URL
-      }
-
-      // --- Main Search Action ---
-      async function doSearch() {
-        const mood = moodInput.value.trim();
-        if (!mood) {
-          showMessage('Please enter a mood or vibe to search.', true);
-          return;
-        }
-        currentMood = mood;
-        await searchTracks(mood);
-      }
-
-      // --- Initialize App ---
-      async function init() {
-        // Check URL for Spotify auth code
-        const code = getCodeFromUrl();
-        if (code) {
-          loginBtn.disabled = true;
-          const success = await exchangeCodeForToken(code);
-          if (success) {
-            loginBtn.style.display = 'none';
-            appDiv.style.display = 'block';
-            showMessage('Logged in successfully! Enter your mood and find songs.');
-            renderMoodHistory();
-            loginBtn.disabled = false;
-            window.history.replaceState({}, document.title, '/'); // clean URL
-          } else {
-            loginBtn.disabled = false;
-          }
+  if (code) {
+    loginBtn.style.display = 'none';
+    messageDiv.textContent = 'Logging in...';
+    fetch(`${backendUrl}/exchange_token?code=${code}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.access_token) {
+          accessToken = data.access_token;
+          messageDiv.textContent = 'Logged in! Enter your mood to find songs.';
+          appDiv.style.display = 'block';
+          history.replaceState(null, '', redirectUri);
         } else {
-          loginBtn.style.display = 'inline-block';
-          appDiv.style.display = 'none';
+          messageDiv.textContent = 'Error getting access token.';
+          loginBtn.style.display = 'block';
         }
-      }
+      })
+      .catch(() => {
+        messageDiv.textContent = 'Failed to connect to backend.';
+        loginBtn.style.display = 'block';
+      });
+  }
 
-      loginBtn.onclick = () => {
-        const authUrl = new URL('https://accounts.spotify.com/authorize');
-        authUrl.searchParams.set('client_id', clientId);
-        authUrl.searchParams.set('response_type', 'code');
-        authUrl.searchParams.set('redirect_uri', redirectUri);
-        authUrl.searchParams.set('scope', scopes);
-        authUrl.searchParams.set('show_dialog', 'true');
-        window.location.href = authUrl.toString();
-      };
+  loginBtn.onclick = () => {
+    const scopes = [
+      'user-read-private',
+      'user-read-email',
+      'playlist-modify-public',
+      'playlist-modify-private',
+      'streaming',
+      'user-read-playback-state',
+      'user-modify-playback-state',
+      'user-read-currently-playing',
+    ].join(' ');
+    const authUrl =
+      `https://accounts.spotify.com/authorize` +
+      `?client_id=${clientId}` +
+      `&response_type=code` +
+      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+      `&scope=${encodeURIComponent(scopes)}` +
+      `&show_dialog=true`;
+    window.location.href = authUrl;
+  };
 
-      searchBtn.onclick = doSearch;
-      createPlaylistBtn.onclick = createPlaylist;
+  searchBtn.onclick = () => {
+    const moodRaw = moodInput.value.trim();
+    if (!accessToken) return alert('Please log in first.');
+    if (!moodRaw) return alert('Please enter a mood or vibe.');
 
-      moodInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter') doSearch();
+    // Normalize mood input
+    let mood = moodRaw.toLowerCase();
+    if (moodSynonyms[mood]) mood = moodSynonyms[mood];
+
+    currentMood = mood;
+    createPlaylistBtn.disabled = true;
+    resultsDiv.innerHTML = '';
+    messageDiv.textContent = 'Searching...';
+    shareLinksDiv.innerHTML = '';
+    playerDiv.innerHTML = '';
+
+    if (moodFeaturesMap[mood]) {
+      searchByMoodFeatures(mood);
+    } else {
+      // fallback to simple search by name
+      searchByName(moodRaw);
+    }
+  };
+
+  // Search tracks using Spotify Recommendations API based on mood features
+  async function searchByMoodFeatures(mood) {
+    try {
+      const features = moodFeaturesMap[mood];
+      const params = new URLSearchParams({
+        limit: 20,
+        seed_genres: 'pop',
+        target_valence: features.target_valence,
+        target_energy: features.target_energy,
+        target_danceability: features.target_danceability,
       });
 
-      // On load
-      init();
-    })();
-  </script>
+      const res = await fetch(`https://api.spotify.com/v1/recommendations?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+
+      if (!res.ok) throw new Error('Spotify recommendations fetch failed');
+
+      const data = await res.json();
+      currentTracks = data.tracks;
+
+      if (currentTracks.length === 0) {
+        messageDiv.textContent = 'No songs found for that mood.';
+        return;
+      }
+      messageDiv.textContent = `Songs recommended for mood: "${mood}"`;
+      votes = {};
+      renderTracks(currentTracks);
+      createPlaylistBtn.disabled = false;
+      setupShareLinks(mood);
+
+    } catch (error) {
+      console.error(error);
+      messageDiv.textContent = 'Failed to get recommendations.';
+    }
+  }
+
+  // Fallback search by track name
+  async function searchByName(query) {
+    try {
+      const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=20`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      if (!res.ok) throw new Error('Spotify search fetch failed');
+
+      const data = await res.json();
+      currentTracks = data.tracks.items;
+
+      if (currentTracks.length === 0) {
+        messageDiv.textContent = 'No songs found for that search.';
+        return;
+      }
+      messageDiv.textContent = `Songs found for search: "${query}"`;
+      votes = {};
+      renderTracks(currentTracks);
+      createPlaylistBtn.disabled = false;
+      setupShareLinks(query);
+
+    } catch (error) {
+      console.error(error);
+      messageDiv.textContent = 'Failed to search songs.';
+    }
+  }
+
+  // Render tracks list in UI
+  function renderTracks(tracks) {
+    resultsDiv.innerHTML = '';
+    tracks.forEach(track => {
+      const trackEl = document.createElement('div');
+      trackEl.className = 'track';
+
+      // Album art
+      const img = document.createElement('img');
+      img.src = track.album.images[2]?.url || track.album.images[0]?.url || '';
+      img.alt = track.name;
+      trackEl.appendChild(img);
+
+      // Track info container
+      const info = document.createElement('div');
+      info.className = 'track-info';
+
+      // Track name (link to Spotify)
+      const link = document.createElement('a');
+      link.href = track.external_urls.spotify;
+      link.target = '_blank';
+      link.textContent = track.name;
+      info.appendChild(link);
+
+      // Artist(s)
+      const artists = document.createElement('small');
+      artists.textContent = track.artists.map(a => a.name).join(', ');
+      info.appendChild(artists);
+
+      trackEl.appendChild(info);
+
+      // Actions (play, upvote, downvote)
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+
+      // Play button
+      const playBtn = document.createElement('button');
+      playBtn.title = 'Play Preview';
+      playBtn.innerHTML = '▶️';
+      playBtn.onclick = () => playPreview(track);
+      actions.appendChild(playBtn);
+
+      // Upvote button
+      const upvoteBtn = document.createElement('button');
+      upvoteBtn.title = 'Upvote';
+      upvoteBtn.textContent = '👍';
+      upvoteBtn.onclick = () => voteTrack(track.id, +1);
+      actions.appendChild(upvoteBtn);
+
+      // Downvote button
+      const downvoteBtn = document.createElement('button');
+      downvoteBtn.title = 'Downvote';
+      downvoteBtn.textContent = '👎';
+      downvoteBtn.onclick = () => voteTrack(track.id, -1);
+      actions.appendChild(downvoteBtn);
+
+      trackEl.appendChild(actions);
+
+      resultsDiv.appendChild(trackEl);
+    });
+  }
+
+  // Playback audio preview
+  let audio = null;
+  function playPreview(track) {
+    if (audio) {
+      audio.pause();
+      audio = null;
+      playerDiv.innerHTML = '';
+    }
+
+    if (!track.preview_url) {
+      messageDiv.textContent = 'No preview available for this track.';
+      return;
+    }
+
+    audio = new Audio(track.preview_url);
+    audio.play();
+    messageDiv.textContent = `Playing preview: ${track.name} by ${track.artists.map(a => a.name).join(', ')}`;
+
+    // Show player controls
+    playerDiv.innerHTML = `
+      <strong>Now Playing:</strong> ${track.name} — ${track.artists.map(a => a.name).join(', ')}<br />
+      <button id="pauseBtn">⏸️ Pause</button> <button id="stopBtn">⏹️ Stop</button>
+    `;
+
+    document.getElementById('pauseBtn').onclick = () => {
+      if (audio.paused) {
+        audio.play();
+        document.getElementById('pauseBtn').textContent = '⏸️ Pause';
+      } else {
+        audio.pause();
+        document.getElementById('pauseBtn').textContent = '▶️ Play';
+      }
+    };
+
+    document.getElementById('stopBtn').onclick = () => {
+      audio.pause();
+      audio.currentTime = 0;
+      playerDiv.innerHTML = '';
+      messageDiv.textContent = '';
+      audio = null;
+    };
+
+    audio.onended = () => {
+      playerDiv.innerHTML = '';
+      messageDiv.textContent = '';
+      audio = null;
+    };
+  }
+
+  // Track voting logic
+  function voteTrack(trackId, delta) {
+    if (!votes[trackId]) votes[trackId] = 0;
+    votes[trackId] += delta;
+    messageDiv.textContent = `Votes for track updated: ${
+    votes[trackId] += delta;
+    // Clamp votes so they don't go below 0 (optional)
+    if (votes[trackId] < 0) votes[trackId] = 0;
+
+    messageDiv.textContent = `Votes updated: ${votes[trackId]} for this track.`;
+  }
+
+  // Create playlist from current tracks and votes
+  createPlaylistBtn.onclick = async () => {
+    if (!accessToken) return alert('Please log in first.');
+
+    messageDiv.textContent = 'Creating playlist...';
+    createPlaylistBtn.disabled = true;
+
+    try {
+      // Get current user profile to create playlist
+      const profileRes = await fetch('https://api.spotify.com/v1/me', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      if (!profileRes.ok) throw new Error('Failed to fetch user profile');
+      const profile = await profileRes.json();
+
+      // Sort tracks by votes descending (default to zero votes if none)
+      const sortedTracks = currentTracks
+        .map(track => ({ track, score: votes[track.id] || 0 }))
+        .sort((a, b) => b.score - a.score)
+        .map(t => t.track);
+
+      // Create playlist with a name that includes mood and timestamp
+      const playlistName = `Feelify: ${currentMood} Playlist ${new Date().toLocaleDateString()}`;
+      const createPlaylistRes = await fetch(`https://api.spotify.com/v1/users/${profile.id}/playlists`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: playlistName,
+          description: `Playlist generated by Feelify for mood "${currentMood}"`,
+          public: false,
+        }),
+      });
+
+      if (!createPlaylistRes.ok) throw new Error('Failed to create playlist');
+
+      const playlistData = await createPlaylistRes.json();
+
+      // Add tracks to playlist (Spotify URIs)
+      const uris = sortedTracks.map(t => t.uri);
+
+      // Spotify API limits to 100 tracks per add call; we have <= 20 so safe
+      const addTracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistData.id}/tracks`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ uris }),
+      });
+
+      if (!addTracksRes.ok) throw new Error('Failed to add tracks to playlist');
+
+      messageDiv.textContent = `Playlist created! You can listen to it in your Spotify app.`;
+
+      // Show share link to playlist
+      shareLinksDiv.innerHTML = `
+        <strong>Playlist link:</strong><br/>
+        <a href="${playlistData.external_urls.spotify}" target="_blank">${playlistData.name}</a>
+      `;
+
+    } catch (err) {
+      console.error(err);
+      messageDiv.textContent = 'Error creating playlist: ' + err.message;
+    } finally {
+      createPlaylistBtn.disabled = false;
+    }
+  };
+
+  // Setup share links for social platforms (simple share of current page + mood)
+  function setupShareLinks(mood) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('mood', mood);
+    const shareUrl = url.toString();
+
+    shareLinksDiv.innerHTML = `
+      <strong>Share your mood and songs:</strong><br/>
+      <a href="https://twitter.com/intent/tweet?text=Check%20out%20my%20mood-based%20playlist%20on%20Feelify!%20Mood:%20${encodeURIComponent(mood)}&url=${encodeURIComponent(shareUrl)}" target="_blank">Twitter</a> |
+      <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}" target="_blank">Facebook</a> |
+      <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}" target="_blank">LinkedIn</a>
+    `;
+  }
+
+  // Optional: On page load, if mood param exists, auto-search
+  window.addEventListener('load', () => {
+    const moodParam = params.get('mood');
+    if (moodParam && accessToken) {
+      moodInput.value = moodParam;
+      searchBtn.click();
+    }
+  });
+</script>
+
 </body>
 </html>
