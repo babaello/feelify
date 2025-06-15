@@ -127,7 +127,7 @@ loginBtn.addEventListener('click', () => {
   const authUrl = `${authEndpoint}?client_id=${clientId}` +
                   `&redirect_uri=${encodeURIComponent(redirectUri)}` +
                   `&scope=${encodeURIComponent(scopes)}` +
-                  `&response_type=token` +  // Implicit Grant flow uses 'token'
+                  `&response_type=code` +  // Implicit Grant flow uses 'token'
                   `&show_dialog=true`;
   window.location = authUrl;
 });
