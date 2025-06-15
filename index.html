@@ -203,8 +203,7 @@
 
   // Redirect user to Spotify login for token
   function redirectToSpotifyAuth() {
-    const authUrl = `${authEndpoint}?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}&response_type=token&show_dialog=true`;
-    window.location = authUrl;
+    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&state=${state}`;
   }
 
   // On page load, parse token
