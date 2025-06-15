@@ -1,653 +1,214 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Feelify - Supercharged Mood Music</title>
-<style>
-  /* Reset & base */
-  * {
-    box-sizing: border-box;
-  }
-  body {
-    margin:0; padding:0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #141e30, #243b55);
-    color: white;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1rem;
-    transition: background 0.5s ease;
-  }
-  .glass {
-    background: rgba(255 255 255 / 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    padding: 1rem 1.5rem;
-    margin: 0.5rem 0;
-    width: 100%;
-    max-width: 480px;
-  }
-  h1 {
-    margin-bottom: 0.2rem;
-    font-weight: 900;
-    font-size: 2.5rem;
-    user-select:none;
-  }
-  button {
-    cursor: pointer;
-    background-color: #1db954;
-    border: none;
-    border-radius: 30px;
-    color: white;
-    font-weight: 700;
-    font-size: 1.1rem;
-    padding: 0.7rem 1.8rem;
-    box-shadow: 0 5px 15px #1db954aa;
-    transition: background-color 0.3s ease;
-  }
-  button:hover {
-    background-color: #1ed760;
-  }
-  input[type="text"] {
-    width: 100%;
-    padding: 0.7rem 1rem;
-    border-radius: 30px;
-    border: none;
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-  }
-  label {
-    font-weight: 700;
-    margin-top: 0.5rem;
-    display: block;
-  }
-  #login-area, #user-area {
-    width: 100%;
-    max-width: 480px;
-  }
-  #search-results {
-    margin-top: 1rem;
-    max-height: 300px;
-    overflow-y: auto;
-  }
-  .track {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    align-items: center;
-    padding: 0.3rem;
-    border-radius: 12px;
-    transition: background-color 0.25s ease;
-  }
-  .track:hover {
-    background-color: rgba(29, 185, 84, 0.15);
-  }
-  .track img {
-    width: 64px;
-    height: 64px;
-    border-radius: 8px;
-    object-fit: cover;
-  }
-  .track-info {
-    flex-grow: 1;
-  }
-  .track-name {
-    font-weight: 700;
-  }
-  .artist-name {
-    font-size: 0.85rem;
-    color: #b2b2b2;
-  }
-  .btn-small {
-    padding: 0.3rem 0.7rem;
-    font-size: 0.8rem;
-    border-radius: 20px;
-  }
-  #toast {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1db954dd;
-    padding: 1rem 1.5rem;
-    border-radius: 30px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-    color: black;
-    font-weight: 700;
-    box-shadow: 0 8px 16px #1db954aa;
-  }
-  #toast.show {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  #theme-toggle {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    background: none;
-    border: 2px solid white;
-    color: white;
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
-    font-weight: 700;
-  }
-  /* Scrollbar for results */
-  #search-results::-webkit-scrollbar {
-    width: 8px;
-  }
-  #search-results::-webkit-scrollbar-thumb {
-    background: #1db954;
-    border-radius: 20px;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Feelify 🎵</title>
+  <style>
+    /* === Base Reset === */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+    body {
+      background: linear-gradient(135deg, #1e1e2f, #151525);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      transition: background 0.3s ease;
+    }
 
-  /* Dark mode */
-  body.light {
-    background: linear-gradient(135deg, #f9fafb, #e3e8ef);
-    color: #111;
-  }
-  body.light .glass {
-    background: rgba(255 255 255 / 0.6);
-    color: #111;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-  }
-  body.light button {
-    background-color: #1db954;
-    color: white;
-    box-shadow: 0 5px 15px #1db954aa;
-  }
-  body.light button:hover {
-    background-color: #17c84a;
-  }
-  body.light #toast {
-    background: #1db954cc;
-    color: white;
-  }
-</style>
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 700px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+      margin-top: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    h1 { font-size: 2rem; margin-bottom: 1rem; text-align: center; }
+
+    input, button, select {
+      padding: 0.8rem;
+      margin: 0.5rem 0;
+      width: 100%;
+      font-size: 1rem;
+      border-radius: 12px;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      background: #1db954;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover { background: #17a245; }
+
+    .track { margin: 1rem 0; padding: 1rem; border-radius: 12px; background: rgba(255,255,255,0.05); display: flex; gap: 1rem; align-items: center; }
+    .track img { width: 64px; height: 64px; border-radius: 8px; }
+    .track-info { flex: 1; }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #333;
+      color: #fff;
+      padding: 1rem;
+      border-radius: 10px;
+      display: none;
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .toast.show { display: block; opacity: 1; }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 700px;
+      margin-bottom: 1rem;
+    }
+
+    .theme-toggle {
+      cursor: pointer;
+      background: transparent;
+      border: 1px solid #888;
+      color: #ccc;
+      padding: 0.4rem 1rem;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .theme-light {
+      background: #fefefe;
+      color: #222;
+    }
+
+    .theme-light .glass {
+      background: rgba(255, 255, 255, 0.8);
+      color: #111;
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 1rem; }
+      .glass { padding: 1rem; }
+    }
+  </style>
 </head>
 <body>
-
-<button id="theme-toggle" aria-label="Toggle light/dark mode">🌙</button>
-
-<h1>Feelify</h1>
-
-<div id="login-area" class="glass" role="region" aria-label="Login area">
-  <button id="login-btn">Log in to Spotify</button>
-</div>
-
-<div id="user-area" class="glass" role="main" style="display:none;">
-  <div>
-    <label for="mood-input">Enter your mood</label>
-    <input id="mood-input" type="text" placeholder="e.g. happy, chill, energetic" aria-autocomplete="list" autocomplete="off" />
-  </div>
-  <div style="display:flex;gap:0.7rem; margin-bottom:0.7rem;">
-    <button id="search-btn">Search Songs</button>
-    <button id="random-mood-btn" title="Try a random mood">🎲 Random Mood</button>
-    <button id="save-mood-btn" title="Save this mood">💾 Save Mood</button>
+  <div class="top-bar">
+    <div id="status">🎧 Feelify</div>
+    <button class="theme-toggle" onclick="toggleTheme()">🌗 Theme</button>
   </div>
 
-  <label>Recent moods:</label>
-  <div id="recent-moods" style="display:flex; gap:0.5rem; flex-wrap: wrap;"></div>
-
-  <label>Favorite moods:</label>
-  <div id="favorite-moods" style="display:flex; gap:0.5rem; flex-wrap: wrap;"></div>
-
-  <div id="search-results" aria-live="polite"></div>
-
-  <div id="player" style="margin-top:1rem;">
-    <audio id="audio-preview" controls></audio>
+  <div class="glass">
+    <h1>How do you feel today?</h1>
+    <input type="text" id="moodInput" placeholder="e.g. calm, excited, nostalgic" />
+    <button onclick="searchMood()">Search Songs</button>
+    <button onclick="randomMood()">🎲 Random Mood</button>
+    <div id="results"></div>
   </div>
 
-  <div style="margin-top:1rem;">
-    <label for="new-playlist-name">Create New Playlist</label>
-    <input id="new-playlist-name" type="text" placeholder="Playlist name" />
-    <button id="create-playlist-btn">Create Playlist</button>
-  </div>
+  <div class="toast" id="toast">Hello!</div>
 
-  <div id="user-playlists" style="margin-top:1rem;">
-    <label>Your Playlists</label>
-    <select id="playlist-select" aria-label="Select a playlist"></select>
-    <button id="add-to-playlist-btn">Add Selected Song to Playlist</button>
-  </div>
-</div>
+  <script>
+    const backendUrl = "https://feelify-backend.onrender.com"; // Your backend URL
 
-<div id="toast" role="alert" aria-live="assertive"></div>
+    const moodToKeywords = {
+      happy: ["uplifting", "energetic", "positive"],
+      sad: ["melancholy", "slow", "emotional"],
+      calm: ["ambient", "chill", "relaxing"],
+      angry: ["intense", "heavy", "fast-paced"],
+      nostalgic: ["retro", "classic", "timeless"],
+      excited: ["party", "dance", "high energy"],
+      relaxed: ["soft", "chill", "laid back"],
+      romantic: ["love", "romantic", "soft pop"],
+      anxious: ["instrumental", "soothing", "ambient"],
+      bored: ["funky", "experimental", "groovy"]
+    };
 
-<script>
-(() => {
-  'use strict';
+    let moodHistory = JSON.parse(localStorage.getItem("moodHistory")) || [];
+    let darkMode = localStorage.getItem("darkMode") === "true";
 
-  // --- Config and Constants ---
-  const CLIENT_ID = 'acb4336604304c339c55eb6db62513ca';
-  const REDIRECT_URI = 'https://babaello.github.io/feelify/';
-  const SCOPES = [
-    'user-read-private',
-    'playlist-modify-private',
-    'playlist-modify-public',
-    'user-read-email',
-    'user-library-read',
-    'user-library-modify',
-  ];
-  const BACKEND_URL = 'https://feelify-backend.onrender.com';
+    const toast = document.getElementById("toast");
+    const results = document.getElementById("results");
 
-  // DOM elements
-  const loginArea = document.getElementById('login-area');
-  const userArea = document.getElementById('user-area');
-  const loginBtn = document.getElementById('login-btn');
-  const moodInput = document.getElementById('mood-input');
-  const searchBtn = document.getElementById('search-btn');
-  const randomMoodBtn = document.getElementById('random-mood-btn');
-  const saveMoodBtn = document.getElementById('save-mood-btn');
-  const recentMoodsDiv = document.getElementById('recent-moods');
-  const favoriteMoodsDiv = document.getElementById('favorite-moods');
-  const searchResultsDiv = document.getElementById('search-results');
-  const audioPreview = document.getElementById('audio-preview');
-  const newPlaylistNameInput = document.getElementById('new-playlist-name');
-  const createPlaylistBtn = document.getElementById('create-playlist-btn');
-  const playlistSelect = document.getElementById('playlist-select');
-  const addToPlaylistBtn = document.getElementById('add-to-playlist-btn');
-  const toast = document.getElementById('toast');
-  const themeToggleBtn = document.getElementById('theme-toggle');
-
-  let accessToken = null;
-  let currentTracks = [];
-  let currentTrackIndex = null;
-  let userPlaylists = [];
-
-  // --- Utility functions ---
-  function showToast(message, duration = 2500) {
-    toast.textContent = message;
-    toast.classList.add('show');
-    setTimeout(() => {
-      toast.classList.remove('show');
-    }, duration);
-  }
-
-  function saveToStorage(key, value) {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch {}
-  }
-
-  function loadFromStorage(key, defaultVal) {
-    try {
-      const v = JSON.parse(localStorage.getItem(key));
-      return v !== null ? v : defaultVal;
-    } catch {
-      return defaultVal;
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 3000);
     }
-  }
 
-  // --- Theme management ---
-  function applyTheme(theme) {
-    if (theme === 'light') {
-      document.body.classList.add('light');
-      themeToggleBtn.textContent = '🌙';
-    } else {
-      document.body.classList.remove('light');
-      themeToggleBtn.textContent = '☀️';
+    function toggleTheme() {
+      darkMode = !darkMode;
+      document.body.classList.toggle("theme-light", !darkMode);
+      localStorage.setItem("darkMode", darkMode);
     }
-    saveToStorage('theme', theme);
-  }
 
-  themeToggleBtn.addEventListener('click', () => {
-    const newTheme = document.body.classList.contains('light') ? 'dark' : 'light';
-    applyTheme(newTheme);
-  });
-
-  (function loadTheme() {
-    const savedTheme = loadFromStorage('theme', 'dark');
-    applyTheme(savedTheme);
-  })();
-
-  // --- Spotify Auth ---
-  function buildSpotifyAuthUrl() {
-    const scopesStr = encodeURIComponent(SCOPES.join(' '));
-    return `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scopesStr}&show_dialog=true`;
-  }
-
-  loginBtn.addEventListener('click', () => {
-    window.location.href = buildSpotifyAuthUrl();
-  });
-
-  function getQueryParam(name) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(name);
-  }
-
-  function clearUrlCodeParam() {
-    if (window.history.replaceState) {
-      const urlWithoutCode = window.location.origin + window.location.pathname;
-      window.history.replaceState({}, document.title, urlWithoutCode);
-    }
-  }
-
-  async function exchangeCodeForToken(code) {
-    try {
-      const resp = await fetch(`${BACKEND_URL}/api/token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
-      });
-      if (!resp.ok) throw new Error('Token exchange failed');
-      const data = await resp.json();
-      return data.access_token;
-    } catch (e) {
-      console.error(e);
-      showToast('Failed to log in with Spotify.');
-      return null;
-    }
-  }
-
-  // --- User Playlists Management ---
-  async function fetchUserPlaylists() {
-    try {
-      const resp = await fetch('https://api.spotify.com/v1/me/playlists?limit=50', {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      if (!resp.ok) throw new Error('Failed to fetch playlists');
-      const data = await resp.json();
-      userPlaylists = data.items || [];
-      populatePlaylistSelect();
-    } catch (e) {
-      console.error(e);
-      showToast('Could not load your playlists.');
-    }
-  }
-
-  function populatePlaylistSelect() {
-    playlistSelect.innerHTML = '';
-    if (userPlaylists.length === 0) {
-      const option = document.createElement('option');
-      option.textContent = 'No playlists found';
-      option.disabled = true;
-      playlistSelect.appendChild(option);
-      return;
-    }
-    userPlaylists.forEach(pl => {
-      const option = document.createElement('option');
-      option.value = pl.id;
-      option.textContent = pl.name;
-      playlistSelect.appendChild(option);
-    });
-  }
-
-  // --- Add track to playlist ---
-  async function addTrackToPlaylist(playlistId, trackUri) {
-    try {
-      const resp = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ uris: [trackUri] }),
-      });
-      if (!resp.ok) throw new Error('Failed to add track');
-      showToast('Track added to playlist!');
-    } catch (e) {
-      console.error(e);
-      showToast('Failed to add track.');
-    }
-  }
-
-  addToPlaylistBtn.addEventListener('click', () => {
-    if (currentTrackIndex === null) {
-      showToast('Select a song first!');
-      return;
-    }
-    const playlistId = playlistSelect.value;
-    if (!playlistId) {
-      showToast('Select a playlist!');
-      return;
-    }
-    const track = currentTracks[currentTrackIndex];
-    addTrackToPlaylist(playlistId, track.uri);
-  });
-
-  // --- Create new playlist ---
-  async function createPlaylist(name) {
-    if (!name || !name.trim()) {
-      showToast('Enter a playlist name.');
-      return;
-    }
-    try {
-      // Get user id
-      const userResp = await fetch('https://api.spotify.com/v1/me', {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      if (!userResp.ok) throw new Error('Failed to get user info');
-      const userData = await userResp.json();
-
-      // Create playlist
-      const resp = await fetch(`https://api.spotify.com/v1/users/${userData.id}/playlists`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: name.trim(),
-          public: false,
-          description: 'Created by Feelify',
-        }),
-      });
-      if (!resp.ok) throw new Error('Failed to create playlist');
-      const playlist = await resp.json();
-      showToast(`Playlist "${playlist.name}" created!`);
-      userPlaylists.unshift(playlist);
-      populatePlaylistSelect();
-      playlistSelect.value = playlist.id;
-      newPlaylistNameInput.value = '';
-    } catch (e) {
-      console.error(e);
-      showToast('Failed to create playlist.');
-    }
-  }
-
-  createPlaylistBtn.addEventListener('click', () => {
-    createPlaylist(newPlaylistNameInput.value);
-  });
-
-  // --- Mood management ---
-  let recentMoods = loadFromStorage('recent_moods', []);
-  let favoriteMoods = loadFromStorage('favorite_moods', []);
-
-  function renderMoodButtons(moods, container, clickHandler) {
-    container.innerHTML = '';
-    moods.forEach(mood => {
-      const btn = document.createElement('button');
-      btn.textContent = mood;
-      btn.classList.add('btn-small');
-      btn.style.backgroundColor = '#1db954';
-      btn.style.color = 'white';
-      btn.addEventListener('click', () => clickHandler(mood));
-      container.appendChild(btn);
-    });
-  }
-
-  function addRecentMood(mood) {
-    recentMoods = recentMoods.filter(m => m !== mood);
-    recentMoods.unshift(mood);
-    if (recentMoods.length > 8) recentMoods.pop();
-    saveToStorage('recent_moods', recentMoods);
-    renderMoodButtons(recentMoods, recentMoodsDiv, onMoodButtonClick);
-  }
-
-  function addFavoriteMood(mood) {
-    if (!favoriteMoods.includes(mood)) {
-      favoriteMoods.unshift(mood);
-      if (favoriteMoods.length > 8) favoriteMoods.pop();
-      saveToStorage('favorite_moods', favoriteMoods);
-      renderMoodButtons(favoriteMoods, favoriteMoodsDiv, onMoodButtonClick);
-      showToast(`Saved mood "${mood}"`);
-    } else {
-      showToast(`Mood "${mood}" already saved`);
-    }
-  }
-
-  saveMoodBtn.addEventListener('click', () => {
-    const mood = moodInput.value.trim();
-    if (!mood) {
-      showToast('Enter a mood first');
-      return;
-    }
-    addFavoriteMood(mood);
-  });
-
-  randomMoodBtn.addEventListener('click', () => {
-    const randomMoods = [
-      'happy', 'sad', 'chill', 'energetic', 'romantic', 'party', 'relax', 'focus',
-      'motivated', 'sleepy', 'angry', 'dreamy', 'adventurous', 'calm', 'nostalgic',
-    ];
-    const mood = randomMoods[Math.floor(Math.random() * randomMoods.length)];
-    moodInput.value = mood;
-    onSearchClick();
-  });
-
-  function onMoodButtonClick(mood) {
-    moodInput.value = mood;
-    onSearchClick();
-  }
-
-  renderMoodButtons(recentMoods, recentMoodsDiv, onMoodButtonClick);
-  renderMoodButtons(favoriteMoods, favoriteMoodsDiv, onMoodButtonClick);
-
-  // --- Search songs by mood ---
-  async function searchSongs(mood) {
-    searchResultsDiv.textContent = 'Searching...';
-    try {
-      const resp = await fetch(`${BACKEND_URL}/api/search`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mood }),
-      });
-      if (!resp.ok) throw new Error('Search failed');
-      const data = await resp.json();
-      return data.songs || [];
-    } catch (e) {
-      console.error(e);
-      showToast('Error fetching songs. Try again.');
-      return [];
-    }
-  }
-
-  function renderSearchResults(tracks) {
-    searchResultsDiv.innerHTML = '';
-    if (tracks.length === 0) {
-      searchResultsDiv.textContent = 'No songs found for that mood.';
-      return;
-    }
-    currentTracks = tracks;
-    currentTrackIndex = null;
-    tracks.forEach((track, i) => {
-      const div = document.createElement('div');
-      div.classList.add('track');
-      div.tabIndex = 0;
-      div.setAttribute('role', 'button');
-      div.setAttribute('aria-label', `Play preview: ${track.name} by ${track.artists.join(', ')}`);
-
-      const img = document.createElement('img');
-      img.src = track.image || '';
-      img.alt = `${track.name} album art`;
-
-      const infoDiv = document.createElement('div');
-      infoDiv.className = 'track-info';
-
-      const nameP = document.createElement('p');
-      nameP.className = 'track-name';
-      nameP.textContent = track.name;
-
-      const artistP = document.createElement('p');
-      artistP.className = 'artist-name';
-      artistP.textContent = track.artists.join(', ');
-
-      infoDiv.appendChild(nameP);
-      infoDiv.appendChild(artistP);
-
-      const playBtn = document.createElement('button');
-      playBtn.className = 'btn-small';
-      playBtn.textContent = '▶️ Play';
-      playBtn.setAttribute('aria-label', `Play preview of ${track.name}`);
-
-      playBtn.addEventListener('click', e => {
-        e.stopPropagation();
-        playTrackPreview(i);
-      });
-
-      div.appendChild(img);
-      div.appendChild(infoDiv);
-      div.appendChild(playBtn);
-
-      div.addEventListener('click', () => playTrackPreview(i));
-      div.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          playTrackPreview(i);
-        }
-      });
-
-      searchResultsDiv.appendChild(div);
-    });
-  }
-
-  function playTrackPreview(index) {
-    if (!currentTracks[index]) return;
-    currentTrackIndex = index;
-    audioPreview.src = currentTracks[index].preview_url || '';
-    audioPreview.play().catch(() => {});
-  }
-
-  searchBtn.addEventListener('click', onSearchClick);
-
-  async function onSearchClick() {
-    const mood = moodInput.value.trim();
-    if (!mood) {
-      showToast('Please enter a mood.');
-      return;
-    }
-    addRecentMood(mood);
-    const songs = await searchSongs(mood);
-    renderSearchResults(songs);
-  }
-
-  // --- Initialization and Auth flow ---
-  async function init() {
-    const code = getQueryParam('code');
-    if (code) {
-      // Exchange code for token
-      loginArea.style.display = 'none';
-      userArea.style.display = 'none';
-      searchResultsDiv.textContent = 'Logging in...';
-      accessToken = await exchangeCodeForToken(code);
-      clearUrlCodeParam();
-      if (accessToken) {
-        loginArea.style.display = 'none';
-        userArea.style.display = 'block';
-        await fetchUserPlaylists();
-      } else {
-        loginArea.style.display = 'block';
-        userArea.style.display = 'none';
+    function applyTheme() {
+      if (!darkMode) {
+        document.body.classList.add("theme-light");
       }
     }
-  }
 
-  init();
-
-  // --- Keyboard shortcuts ---
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && document.activeElement === moodInput) {
-      onSearchClick();
+    function randomMood() {
+      const keys = Object.keys(moodToKeywords);
+      const mood = keys[Math.floor(Math.random() * keys.length)];
+      document.getElementById("moodInput").value = mood;
+      searchMood();
     }
-  });
 
-})();
-</script>
+    function searchMood() {
+      const mood = document.getElementById("moodInput").value.trim().toLowerCase();
+      if (!mood) return showToast("Please enter a mood.");
 
+      const keywords = moodToKeywords[mood] || [mood];
+
+      fetch(`${backendUrl}/search?keywords=${encodeURIComponent(keywords.join(","))}`)
+        .then(res => res.json())
+        .then(data => {
+          if (!data || !data.tracks || data.tracks.length === 0) {
+            results.innerHTML = "<p>No songs found for that mood.</p>";
+            return;
+          }
+
+          // Save to history
+          moodHistory.unshift(mood);
+          moodHistory = [...new Set(moodHistory)].slice(0, 10);
+          localStorage.setItem("moodHistory", JSON.stringify(moodHistory));
+
+          // Render
+          results.innerHTML = "";
+          data.tracks.forEach(track => {
+            const el = document.createElement("div");
+            el.className = "track";
+            el.innerHTML = `
+              <img src="${track.album.images[0].url}" />
+              <div class="track-info">
+                <strong>${track.name}</strong><br/>
+                <em>${track.artists.map(a => a.name).join(", ")}</em>
+              </div>
+              <audio controls src="${track.preview_url}" style="height:32px"></audio>
+            `;
+            results.appendChild(el);
+          });
+        })
+        .catch(() => {
+          showToast("Error fetching songs. Try again.");
+        });
+    }
+
+    applyTheme();
+  </script>
 </body>
 </html>
