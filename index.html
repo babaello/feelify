@@ -1,114 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Feelify - Find songs by your mood</title>
-<style>
-  body { font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto; padding: 1rem; }
-  #app { display: none; margin-top: 1rem; }
-  a { display: block; margin: 0.5rem 0; color: #1DB954; text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  button { cursor: pointer; padding: 0.5rem 1rem; font-size: 1rem; }
-  input { width: 100%; padding: 0.5rem; font-size: 1rem; margin-top: 1rem; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Feelify – Find songs by your mood</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #fff;
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    h1 { color: #1DB954; }
+    button, input {
+      font-size: 1rem;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      width: 100%;
+    }
+    #results a {
+      color: #1DB954;
+      display: block;
+      margin: 0.25rem 0;
+      text-decoration: none;
+    }
+    #results a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
 
-<h1>Feelify</h1>
-<button id="loginBtn">Log in with Spotify</button>
+  <h1>Feelify</h1>
+  <button id="loginBtn">Log in with Spotify</button>
 
-<div id="app">
-  <input type="text" id="moodInput" placeholder="Enter your mood or vibe" />
-  <button id="searchBtn">Find Songs</button>
-  <div id="results"></div>
-</div>
+  <div id="app" style="display: none;">
+    <input type="text" id="moodInput" placeholder="Enter your mood or vibe" />
+    <button id="searchBtn">Find Songs</button>
+    <div id="results"></div>
+  </div>
 
-<script>
-  const clientId = 'acb4336604304c339c55eb6db62513ca';
-  const redirectUri = 'https://babaello.github.io/feelify/';
-  const backendUrl = 'https://YOUR_BACKEND_URL'; // Replace with your backend URL (e.g., Render, Railway)
+  <script>
+    const clientId = 'acb4336604304c339c55eb6db62513ca';
+    const redirectUri = 'https://babaello.github.io/feelify/';
+    const backendUrl = 'http://localhost:3000'; // Change this when you deploy the backend online
 
-  const loginBtn = document.getElementById('loginBtn');
-  const appDiv = document.getElementById('app');
-  const searchBtn = document.getElementById('searchBtn');
-  const moodInput = document.getElementById('moodInput');
-  const resultsDiv = document.getElementById('results');
+    const loginBtn = document.getElementById('loginBtn');
+    const appDiv = document.getElementById('app');
+    const searchBtn = document.getElementById('searchBtn');
+    const moodInput = document.getElementById('moodInput');
+    const resultsDiv = document.getElementById('results');
 
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('code');
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    let accessToken = null;
 
-  let accessToken = null;
-
-  if (code) {
-    loginBtn.style.display = 'none';
-    appDiv.style.display = 'block';
-
-    fetch(`${backendUrl}/exchange_token?code=${code}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.access_token) {
-          accessToken = data.access_token;
-          resultsDiv.textContent = 'Logged in! Enter your mood and find songs.';
-          history.replaceState(null, '', redirectUri); // Clean URL
-        } else {
-          resultsDiv.textContent = 'Error getting access token.';
-        }
-      })
-      .catch(() => {
-        resultsDiv.textContent = 'Failed to connect to backend.';
-      });
-  } else {
-    loginBtn.style.display = 'inline-block';
-    appDiv.style.display = 'none';
-  }
-
-  loginBtn.onclick = () => {
-    const scopes = 'user-read-private user-read-email';
-    const authUrl =
-      `https://accounts.spotify.com/authorize?client_id=${clientId}` +
-      `&response_type=code` +
-      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      `&scope=${encodeURIComponent(scopes)}` +
-      `&show_dialog=true`;
-    window.location = authUrl;
-  };
-
-  searchBtn.onclick = () => {
-    if (!accessToken) {
-      alert('Please log in first.');
-      return;
-    }
-    const mood = moodInput.value.trim();
-    if (!mood) {
-      alert('Enter a mood or vibe!');
-      return;
-    }
-    resultsDiv.textContent = 'Searching...';
-
-    fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(mood)}&type=track&limit=10`, {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (!data.tracks || data.tracks.items.length === 0) {
-          resultsDiv.textContent = 'No songs found for that mood.';
-          return;
-        }
-        resultsDiv.innerHTML = '';
-        data.tracks.items.forEach(track => {
-          const a = document.createElement('a');
-          a.href = track.external_urls.spotify;
-          a.target = '_blank';
-          a.textContent = `${track.name} — ${track.artists.map(a => a.name).join(', ')}`;
-          resultsDiv.appendChild(a);
+    if (code) {
+      loginBtn.style.display = 'none';
+      appDiv.style.display = 'block';
+      fetch(`${backendUrl}/exchange_token?code=${code}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.access_token) {
+            accessToken = data.access_token;
+            resultsDiv.textContent = 'Logged in! Enter your mood to find songs.';
+            history.replaceState(null, '', redirectUri); // Clean URL
+          } else {
+            resultsDiv.textContent = 'Error getting access token.';
+          }
+        })
+        .catch(() => {
+          resultsDiv.textContent = 'Failed to connect to backend.';
         });
+    }
+
+    loginBtn.onclick = () => {
+      const scopes = 'user-read-private user-read-email';
+      const authUrl =
+        `https://accounts.spotify.com/authorize` +
+        `?client_id=${clientId}` +
+        `&response_type=code` +
+        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+        `&scope=${encodeURIComponent(scopes)}` +
+        `&show_dialog=true`;
+      window.location.href = authUrl;
+    };
+
+    searchBtn.onclick = () => {
+      const mood = moodInput.value.trim();
+      if (!accessToken) return alert('Please log in first.');
+      if (!mood) return alert('Please enter a mood or vibe.');
+
+      resultsDiv.textContent = 'Searching...';
+
+      fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(mood)}&type=track&limit=10`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
       })
-      .catch(() => {
-        resultsDiv.textContent = 'Error fetching songs.';
-      });
-  };
-</script>
+        .then(res => res.json())
+        .then(data => {
+          resultsDiv.innerHTML = '';
+          const tracks = data.tracks?.items || [];
+          if (tracks.length === 0) {
+            resultsDiv.textContent = 'No songs found for that mood.';
+            return;
+          }
+          tracks.forEach(track => {
+            const link = document.createElement('a');
+            link.href = track.external_urls.spotify;
+            link.target = '_blank';
+            link.textContent = `${track.name} — ${track.artists.map(a => a.name).join(', ')}`;
+            resultsDiv.appendChild(link);
+          });
+        })
+        .catch(() => {
+          resultsDiv.textContent = 'Error fetching songs.';
+        });
+    };
+  </script>
 
 </body>
 </html>
