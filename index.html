@@ -45,7 +45,7 @@
   <script>
     const clientId = 'acb4336604304c339c55eb6db62513ca';
     const redirectUri = 'https://babaello.github.io/feelify/';
-    const backendUrl = 'http://localhost:3000'; // Change this when you deploy the backend online
+    const backendUrl = 'https://feelify-backend.onrender.com'; // ✅ Use your deployed backend URL here
 
     const loginBtn = document.getElementById('loginBtn');
     const appDiv = document.getElementById('app');
@@ -66,7 +66,7 @@
           if (data.access_token) {
             accessToken = data.access_token;
             resultsDiv.textContent = 'Logged in! Enter your mood to find songs.';
-            history.replaceState(null, '', redirectUri); // Clean URL
+            history.replaceState(null, '', redirectUri);
           } else {
             resultsDiv.textContent = 'Error getting access token.';
           }
