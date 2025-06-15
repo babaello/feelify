@@ -593,7 +593,7 @@
     const authEndpoint = 'https://accounts.spotify.com/authorize';
     const url =
       authEndpoint +
-      '?response_type=token' +
+      '?response_type=code' +
       '&client_id=' + encodeURIComponent(client_id) +
       '&scope=' + encodeURIComponent(scopes.join(' ')) +
       '&redirect_uri=' + encodeURIComponent(redirect_uri) +
