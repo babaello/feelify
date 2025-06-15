@@ -4,31 +4,118 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Feelify – Find songs by your mood</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
+    /* Reset and base */
+    * {
+      box-sizing: border-box;
+    }
     body {
-      font-family: Arial, sans-serif;
-      background: #121212;
+      font-family: 'Poppins', Arial, sans-serif;
+      background: linear-gradient(135deg, #1db954, #14833b);
       color: #fff;
       max-width: 600px;
       margin: 2rem auto;
       padding: 1rem;
+      user-select: none;
     }
-    h1 { color: #1DB954; }
-    button, input {
-      font-size: 1rem;
-      padding: 0.5rem;
-      margin: 0.5rem 0;
+
+    h1 {
+      color: #fff;
+      font-weight: 600;
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    #loginBtn, #searchBtn {
+      background: #fff;
+      color: #1db954;
+      font-weight: 600;
+      border: none;
+      border-radius: 30px;
+      padding: 0.75rem 1rem;
       width: 100%;
+      cursor: pointer;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 10px rgba(29,185,84,0.4);
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+
+    #loginBtn:hover, #searchBtn:hover {
+      background: #1db954;
+      color: #fff;
+      box-shadow: 0 6px 15px rgba(29,185,84,0.7);
+    }
+
+    #app {
+      background: rgba(255 255 255 / 0.1);
+      border-radius: 15px;
+      padding: 2rem 1.5rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      margin-top: 1rem;
+    }
+
+    #moodInput {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border-radius: 30px;
+      border: none;
+      margin-bottom: 1rem;
+      outline: none;
+      transition: box-shadow 0.3s ease;
+      background: rgba(255 255 255 / 0.15);
+      color: #fff;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+    }
+    #moodInput::placeholder {
+      color: #d0f2c0;
+      font-style: italic;
+    }
+    #moodInput:focus {
+      box-shadow: 0 0 10px #1db954;
+      background: rgba(255 255 255 / 0.25);
+    }
+
+    #results {
+      margin-top: 1.5rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      min-height: 3rem;
+      user-select: text;
     }
     #results a {
-      color: #1DB954;
+      color: #b3f59e;
       display: block;
-      margin: 0.25rem 0;
+      margin-bottom: 0.5rem;
       text-decoration: none;
+      font-weight: 600;
+      border-radius: 6px;
+      padding: 0.3rem 0.5rem;
+      transition: background-color 0.2s ease;
     }
     #results a:hover {
+      background-color: rgba(255 255 255 / 0.15);
       text-decoration: underline;
     }
+
+    /* Loading spinner */
+    .spinner {
+      margin: 0 auto;
+      width: 30px;
+      height: 30px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top-color: #1db954;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
   </style>
 </head>
 <body>
@@ -37,7 +124,7 @@
   <button id="loginBtn">Log in with Spotify</button>
 
   <div id="app" style="display: none;">
-    <input type="text" id="moodInput" placeholder="Enter your mood or vibe" />
+    <input type="text" id="moodInput" placeholder="Enter your mood or vibe" autocomplete="off" />
     <button id="searchBtn">Find Songs</button>
     <div id="results"></div>
   </div>
@@ -45,7 +132,7 @@
   <script>
     const clientId = 'acb4336604304c339c55eb6db62513ca';
     const redirectUri = 'https://babaello.github.io/feelify/';
-    const backendUrl = 'https://feelify-backend.onrender.com'; // ✅ Use your deployed backend URL here
+    const backendUrl = 'https://feelify-backend.onrender.com';
 
     const loginBtn = document.getElementById('loginBtn');
     const appDiv = document.getElementById('app');
@@ -93,7 +180,8 @@
       if (!accessToken) return alert('Please log in first.');
       if (!mood) return alert('Please enter a mood or vibe.');
 
-      resultsDiv.textContent = 'Searching...';
+      // Show loading spinner
+      resultsDiv.innerHTML = '<div class="spinner"></div>';
 
       fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(mood)}&type=track&limit=10`, {
         headers: {
@@ -112,6 +200,7 @@
             const link = document.createElement('a');
             link.href = track.external_urls.spotify;
             link.target = '_blank';
+            link.rel = 'noopener noreferrer';
             link.textContent = `${track.name} — ${track.artists.map(a => a.name).join(', ')}`;
             resultsDiv.appendChild(link);
           });
