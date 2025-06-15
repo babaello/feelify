@@ -1,676 +1,511 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Feelify - Your Mood, Your Music</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap');
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Feelify – Your AI Mood Music Finder</title>
+<style>
+  /* Reset & base */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0; padding: 0;
+    background: #121212;
+    color: #eee;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 720px;
+    margin-left: auto; margin-right: auto;
+    padding: 1rem;
+  }
 
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #121212 0%, #1db954 100%);
-      min-height: 100vh;
-      color: #e0e0e0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem 1rem;
-    }
-    .container {
-      background: rgba(18, 18, 18, 0.6);
-      backdrop-filter: blur(12px);
-      border-radius: 20px;
-      box-shadow:
-        0 4px 30px rgba(29, 185, 84, 0.4),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  h1 {
+    color: #1DB954;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    user-select: none;
+  }
+
+  /* Buttons */
+  button {
+    background: #1DB954;
+    border: none;
+    padding: 0.7rem 1.4rem;
+    font-size: 1.1rem;
+    border-radius: 30px;
+    cursor: pointer;
+    color: black;
+    font-weight: 700;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 3px 10px #1DB954aa;
+    user-select: none;
+  }
+  button:disabled {
+    background: #555;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  button:hover:not(:disabled) {
+    background: #17b14a;
+    box-shadow: 0 5px 15px #17b14aaa;
+  }
+
+  /* Input */
+  input[type="text"] {
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 0.6rem 1rem;
+    border-radius: 30px;
+    border: 2px solid #1DB954;
+    background: #222;
+    color: #eee;
+    outline-offset: 3px;
+    transition: border-color 0.3s ease;
+    user-select: text;
+  }
+  input[type="text"]:focus {
+    border-color: #17b14a;
+    background: #1c1c1c;
+  }
+
+  /* Container */
+  #app {
+    margin-top: 2rem;
+  }
+
+  /* Results container */
+  #results {
+    margin-top: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(250px,1fr));
+    gap: 1rem;
+  }
+
+  /* Each track card */
+  .track-card {
+    background: #1e1e1e;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 0 12px #1DB95466;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.3s ease;
+    user-select: none;
+  }
+  .track-card:hover {
+    transform: scale(1.05);
+  }
+
+  /* Album art */
+  .album-art {
+    width: 150px;
+    height: 150px;
+    border-radius: 12px;
+    object-fit: cover;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 20px #1DB954aa;
+  }
+
+  /* Track name */
+  .track-name {
+    color: #1DB954;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+    cursor: pointer;
+    text-align: center;
+    user-select: text;
+  }
+  .track-name:hover {
+    text-decoration: underline;
+  }
+
+  /* Artist name */
+  .artist-name {
+    font-size: 0.9rem;
+    color: #bbb;
+    margin-bottom: 0.6rem;
+    text-align: center;
+    user-select: text;
+  }
+
+  /* Audio preview */
+  audio {
+    width: 100%;
+    border-radius: 8px;
+    outline: none;
+    margin-bottom: 0.8rem;
+  }
+
+  /* Add playlist button */
+  .add-playlist-btn {
+    background: transparent;
+    border: 2px solid #1DB954;
+    border-radius: 30px;
+    color: #1DB954;
+    font-weight: 600;
+    padding: 0.4rem 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    user-select: none;
+  }
+  .add-playlist-btn:hover {
+    background-color: #1DB954;
+    color: black;
+  }
+  .add-playlist-btn:disabled {
+    border-color: #555;
+    color: #555;
+    cursor: not-allowed;
+    background: none;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    border: 4px solid #222;
+    border-top: 4px solid #1DB954;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 2rem auto;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Status message */
+  #statusMsg {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    min-height: 1.3em;
+  }
+
+  /* Toast notifications */
+  #toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #1DB954;
+    color: black;
+    padding: 1rem 1.6rem;
+    border-radius: 30px;
+    font-weight: 700;
+    box-shadow: 0 4px 15px #1DB954aa;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    user-select: none;
+    z-index: 999;
+  }
+  #toast.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .track-card {
       width: 100%;
-      max-width: 720px;
-      padding: 2rem 2.5rem 3rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.8rem;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      margin: 0 auto;
     }
-    h1 {
-      font-weight: 600;
-      font-size: 2.8rem;
-      color: #1db954;
-      text-align: center;
-      margin: 0 0 0.2rem;
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
-      user-select: none;
+    .album-art {
+      width: 120px;
+      height: 120px;
     }
-    h2 {
-      margin: 1.5rem 0 0.7rem;
-      color: #a1a1a1;
-      font-weight: 600;
-      font-size: 1.3rem;
-      letter-spacing: 0.06em;
-    }
-    #loginBtn {
-      background: linear-gradient(135deg, #1db954, #16a247);
-      border: none;
-      border-radius: 40px;
-      color: #121212;
-      font-weight: 700;
-      font-size: 1.3rem;
-      padding: 1rem 0;
-      cursor: pointer;
-      box-shadow:
-        0 6px 12px rgba(29, 185, 84, 0.7);
-      transition: all 0.3s ease;
-      user-select: none;
-      width: 100%;
-    }
-    #loginBtn:hover {
-      background: linear-gradient(135deg, #16a247, #1db954);
-      box-shadow:
-        0 8px 20px rgba(22, 162, 71, 0.9);
-      transform: translateY(-3px);
-    }
-    #loginBtn:active {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 10px rgba(22, 162, 71, 0.7);
-    }
-    #app {
-      display: none;
-    }
-    #userProfile {
-      display: flex;
-      align-items: center;
-      gap: 1.3rem;
-      padding: 1rem 1.5rem;
-      background: rgba(29, 185, 84, 0.15);
-      border-radius: 16px;
-      box-shadow: 0 0 15px rgba(29, 185, 84, 0.3);
-      user-select: none;
-    }
-    #userProfile img {
-      border-radius: 50%;
-      width: 68px;
-      height: 68px;
-      object-fit: cover;
-      border: 2.5px solid #1db954;
-      box-shadow: 0 0 10px #1db954aa;
-      flex-shrink: 0;
-    }
-    #userProfile div {
-      display: flex;
-      flex-direction: column;
-      gap: 0.15rem;
-      color: #d4d4d4;
-    }
-    #userProfile div strong {
-      font-size: 1.15rem;
-      color: #fff;
-    }
-    #userProfile div small {
-      font-size: 0.85rem;
-      color: #a0a0a0;
-    }
-    #moodInput {
-      width: 100%;
-      border-radius: 30px;
-      border: none;
-      padding: 1rem 1.3rem;
-      font-size: 1.1rem;
-      font-weight: 400;
-      background: rgba(255, 255, 255, 0.1);
-      color: #e0e0e0;
-      box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.07);
-      outline-offset: 2px;
-      transition: background 0.25s ease;
-      user-select: text;
-    }
-    #moodInput::placeholder {
-      color: #c1c1c1;
-      font-style: italic;
-    }
-    #moodInput:focus {
-      background: rgba(255, 255, 255, 0.18);
-      outline: none;
-      box-shadow: 0 0 10px #1db954cc;
-    }
-    #searchBtn {
-      background: linear-gradient(135deg, #1db954, #16a247);
-      border: none;
-      border-radius: 40px;
-      color: #121212;
-      font-weight: 700;
-      font-size: 1.25rem;
-      padding: 1rem 0;
-      cursor: pointer;
-      box-shadow:
-        0 6px 14px rgba(29, 185, 84, 0.7);
-      transition: all 0.3s ease;
-      user-select: none;
-      margin-top: -0.7rem;
-      width: 100%;
-    }
-    #searchBtn:hover {
-      background: linear-gradient(135deg, #16a247, #1db954);
-      box-shadow:
-        0 8px 22px rgba(22, 162, 71, 0.9);
-      transform: translateY(-3px);
-    }
-    #searchBtn:active {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 10px rgba(22, 162, 71, 0.7);
-    }
-    #results,
-    #playlists {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      margin-top: 0.5rem;
-      max-height: 320px;
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: #1db954 transparent;
-    }
-    #results::-webkit-scrollbar,
-    #playlists::-webkit-scrollbar {
-      width: 6px;
-    }
-    #results::-webkit-scrollbar-thumb,
-    #playlists::-webkit-scrollbar-thumb {
-      background-color: #1db954;
-      border-radius: 20px;
-    }
-    .track {
-      background: rgba(18, 18, 18, 0.7);
-      backdrop-filter: blur(8px);
-      border-radius: 14px;
-      padding: 0.8rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 1.15rem;
-      box-shadow: 0 0 18px #1db954aa;
-      transition: background 0.3s ease;
-      user-select: none;
-    }
-    .track:hover {
-      background: rgba(29, 185, 84, 0.15);
-      box-shadow: 0 0 22px #1db954dd;
-    }
-    .track img {
-      width: 68px;
-      height: 68px;
-      border-radius: 12px;
-      box-shadow: 0 0 7px #1db954cc;
-      flex-shrink: 0;
-      object-fit: cover;
-    }
-    .track-info {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      overflow: hidden;
-    }
-    .track-title {
-      font-weight: 600;
-      font-size: 1.1rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: #e0e0e0;
-    }
-    .track-artists {
-      font-size: 0.9rem;
-      font-weight: 400;
-      color: #a0a0a0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .play-btn,
-    .add-btn {
-      border: none;
-      cursor: pointer;
-      background: transparent;
-      color: #1db954;
-      font-size: 1.6rem;
-      transition: color 0.3s ease;
-      padding: 0.1rem 0.4rem;
-      user-select: none;
-      flex-shrink: 0;
-    }
-    .play-btn:hover,
-    .add-btn:hover {
-      color: #16a247;
-    }
-    section > h2 {
-      margin-top: 1.5rem;
-      color: #a1a1a1;
-      font-weight: 600;
-      font-size: 1.3rem;
-      letter-spacing: 0.06em;
-    }
-    @media (max-width: 480px) {
-      .container {
-        padding: 1.5rem 1.8rem 2.2rem;
-      }
-      h1 {
-        font-size: 2.2rem;
-      }
-      #userProfile img {
-        width: 52px;
-        height: 52px;
-      }
-      .track img {
-        width: 52px;
-        height: 52px;
-      }
-      .play-btn,
-      .add-btn {
-        font-size: 1.3rem;
-      }
-    }
-  </style>
+  }
+
+</style>
 </head>
 <body>
+  <h1>FEELIFY</h1>
 
-  <div class="container" role="main" aria-live="polite">
-    <h1>Feelify</h1>
+  <div id="login-section" aria-live="polite">
     <button id="loginBtn" aria-label="Log in with Spotify">Log in with Spotify</button>
-
-    <div id="app" aria-live="polite" tabindex="-1">
-      <div id="userProfile" aria-label="User profile info"></div>
-
-      <input
-        id="moodInput"
-        type="text"
-        placeholder="Enter your mood or vibe..."
-        aria-label="Mood or vibe input"
-        autocomplete="off"
-        spellcheck="false"
-      />
-      <button id="searchBtn" aria-label="Search songs for mood">Find Songs</button>
-
-      <section>
-        <h2>Song Results</h2>
-        <div id="results"></div>
-      </section>
-
-      <section>
-        <h2>Your Playlists</h2>
-        <div id="playlists"></div>
-      </section>
-    </div>
   </div>
 
-  <script>
-    // === CONFIGURATION ===
-    const backendBaseUrl = 'https://your-backend-url.com'; // CHANGE to your backend URL
-    const spotifyClientId = 'YOUR_SPOTIFY_CLIENT_ID'; // CHANGE to your Spotify client ID
-    const redirectUri = window.location.origin + window.location.pathname; // Current page, no query params
+  <div id="app" style="display:none;" aria-live="polite">
+    <input
+      type="text"
+      id="moodInput"
+      placeholder="How are you feeling? Enter your mood or vibe..."
+      aria-label="Mood input"
+      autocomplete="off"
+      maxlength="30"
+    />
+    <button id="searchBtn" disabled>Find Songs</button>
+    <div id="statusMsg" role="alert" aria-live="assertive"></div>
+    <div id="results" aria-live="polite" tabindex="0"></div>
+  </div>
 
-    // === UTILS ===
-    function generateRandomString(length) {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-      let result = '';
-      for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return result;
+  <div id="toast" role="alert" aria-live="assertive"></div>
+
+<script>
+  const clientId = 'acb4336604304c339c55eb6db62513ca';
+  const redirectUri = 'https://babaello.github.io/feelify/'; // Change if needed
+  const backendUrl = 'https://feelify-backend.onrender.com';
+
+  const loginBtn = document.getElementById('loginBtn');
+  const loginSection = document.getElementById('login-section');
+  const appDiv = document.getElementById('app');
+  const searchBtn = document.getElementById('searchBtn');
+  const moodInput = document.getElementById('moodInput');
+  const resultsDiv = document.getElementById('results');
+  const statusMsg = document.getElementById('statusMsg');
+  const toast = document.getElementById('toast');
+
+  let accessToken = localStorage.getItem('feelify_access_token') || null;
+  let refreshToken = localStorage.getItem('feelify_refresh_token') || null;
+  let tokenExpiry = localStorage.getItem('feelify_token_expiry') || 0;
+
+  // Show toast message
+  function showToast(message, duration = 3000) {
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, duration);
+  }
+
+  // Show or hide login/app sections based on token availability & expiry
+  function updateUIByAuth() {
+    const now = Date.now();
+    if (accessToken && tokenExpiry > now) {
+      loginSection.style.display = 'none';
+      appDiv.style.display = 'block';
+      statusMsg.textContent = 'Logged in! Enter your mood to find songs.';
+      searchBtn.disabled = false;
+    } else {
+      loginSection.style.display = 'block';
+      appDiv.style.display = 'none';
+      searchBtn.disabled = true;
     }
+  }
 
-    function parseQueryParams() {
-      const queryString = window.location.search;
-      const urlParams = new URLSearchParams(queryString);
-      let params = {};
-      for (const [key, value] of urlParams.entries()) {
-        params[key] = value;
+  // Parse URL query params and exchange code for token
+  async function tryExchangeToken() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if (!code) return;
+
+    statusMsg.textContent = 'Logging in...';
+    try {
+      const res = await fetch(`${backendUrl}/exchange_token?code=${code}`);
+      const data = await res.json();
+      if (data.access_token) {
+        accessToken = data.access_token;
+        refreshToken = data.refresh_token;
+        tokenExpiry = Date.now() + (data.expires_in * 1000) - 60000; // 1min before expiry
+        // Save to localStorage
+        localStorage.setItem('feelify_access_token', accessToken);
+        localStorage.setItem('feelify_refresh_token', refreshToken);
+        localStorage.setItem('feelify_token_expiry', tokenExpiry);
+        // Clean URL
+        history.replaceState(null, '', redirectUri);
+        updateUIByAuth();
+        showToast('Logged in successfully!');
+      } else {
+        statusMsg.textContent = 'Login failed. Please try again.';
       }
-      return params;
+    } catch (err) {
+      statusMsg.textContent = 'Backend connection error.';
+      console.error(err);
     }
+  }
 
-    function clearQueryParams() {
-      if (window.history && window.history.replaceState) {
-        const cleanUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, document.title, cleanUrl);
+  // Refresh access token using refresh token
+  async function refreshAccessToken() {
+    if (!refreshToken) return;
+    try {
+      const res = await fetch(`${backendUrl}/refresh_token?refresh_token=${refreshToken}`);
+      const data = await res.json();
+      if (data.access_token) {
+        accessToken = data.access_token;
+        tokenExpiry = Date.now() + (data.expires_in * 1000) - 60000;
+        localStorage.setItem('feelify_access_token', accessToken);
+        localStorage.setItem('feelify_token_expiry', tokenExpiry);
+        showToast('Access token refreshed');
+        updateUIByAuth();
+      } else {
+        logout();
       }
+    } catch {
+      logout();
     }
+  }
 
-    // === SPOTIFY AUTH ===
+  // Logout function clears tokens & UI
+  function logout() {
+    accessToken = null;
+    refreshToken = null;
+    tokenExpiry = 0;
+    localStorage.removeItem('feelify_access_token');
+    localStorage.removeItem('feelify_refresh_token');
+    localStorage.removeItem('feelify_token_expiry');
+    updateUIByAuth();
+    showToast('Logged out');
+  }
+
+  loginBtn.onclick = () => {
     const scopes = [
       'user-read-private',
       'user-read-email',
-      'playlist-read-private',
-      'playlist-modify-public',
       'playlist-modify-private',
-      'user-library-modify',
-      'user-read-playback-state',
-      'user-modify-playback-state'
-    ];
+      'playlist-modify-public',
+      'user-library-read'
+    ].join(' ');
+    const authUrl =
+      `https://accounts.spotify.com/authorize` +
+      `?client_id=${clientId}` +
+      `&response_type=code` +
+      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+      `&scope=${encodeURIComponent(scopes)}` +
+      `&show_dialog=true`;
+    window.location.href = authUrl;
+  };
 
-    let accessToken = null;
-    let refreshToken = null;
-    let tokenExpiryTime = null;
+  moodInput.oninput = () => {
+    searchBtn.disabled = moodInput.value.trim().length === 0 || !accessToken;
+    statusMsg.textContent = '';
+  };
 
-    const loginBtn = document.getElementById('loginBtn');
-    const appDiv = document.getElementById('app');
-    const userProfileDiv = document.getElementById('userProfile');
-    const moodInput = document.getElementById('moodInput');
-    const searchBtn = document.getElementById('searchBtn');
-    const resultsDiv = document.getElementById('results');
-    const playlistsDiv = document.getElementById('playlists');
-
-    let audio = new Audio();
-    let currentPlayingTrackId = null;
-
-    // PKCE flow helpers
-    async function sha256(plain) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(plain);
-      const hash = await crypto.subtle.digest('SHA-256', data);
-      return new Uint8Array(hash);
+  searchBtn.onclick = async () => {
+    const mood = moodInput.value.trim();
+    if (!mood) {
+      statusMsg.textContent = 'Please enter a mood or vibe.';
+      return;
+    }
+    if (!accessToken) {
+      statusMsg.textContent = 'Please log in first.';
+      return;
     }
 
-    function base64UrlEncode(arrayBuffer) {
-      return btoa(String.fromCharCode.apply(null, arrayBuffer))
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    }
+    resultsDiv.innerHTML = '<div class="spinner" aria-label="Loading results"></div>';
+    statusMsg.textContent = 'Analyzing your mood...';
 
-    async function generateCodeChallenge(codeVerifier) {
-      const hashed = await sha256(codeVerifier);
-      return base64UrlEncode(hashed);
-    }
+    try {
+      // Get AI keywords from backend
+      const keywordsRes = await fetch(`${backendUrl}/mood_keywords?mood=${encodeURIComponent(mood)}`);
+      const keywordsData = await keywordsRes.json();
+      const keywords = keywordsData.keywords || [mood];
 
-    async function startLogin() {
-      const state = generateRandomString(16);
-      const codeVerifier = generateRandomString(64);
-      sessionStorage.setItem('pkce_code_verifier', codeVerifier);
-      sessionStorage.setItem('oauth_state', state);
+      statusMsg.textContent = `Searching for songs related to "${keywords.join(', ')}"...`;
 
-      const codeChallenge = await generateCodeChallenge(codeVerifier);
-      const scope = scopes.join(' ');
-
-      const authUrl = `https://accounts.spotify.com/authorize?client_id=${encodeURIComponent(spotifyClientId)}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}&state=${state}&code_challenge_method=S256&code_challenge=${codeChallenge}`;
-
-      window.location = authUrl;
-    }
-
-    async function exchangeToken(code) {
-      const codeVerifier = sessionStorage.getItem('pkce_code_verifier');
-      try {
-        const res = await fetch(`${backendBaseUrl}/exchange_token?code=${encodeURIComponent(code)}`, {
-          method: 'GET',
-        });
-        if (!res.ok) throw new Error('Failed to exchange token');
-        const data = await res.json();
-        accessToken = data.access_token;
-        refreshToken = data.refresh_token;
-        tokenExpiryTime = Date.now() + (data.expires_in * 1000);
-        sessionStorage.setItem('access_token', accessToken);
-        sessionStorage.setItem('refresh_token', refreshToken);
-        sessionStorage.setItem('token_expiry', tokenExpiryTime);
-        sessionStorage.removeItem('pkce_code_verifier');
-        sessionStorage.removeItem('oauth_state');
-        clearQueryParams();
-        return true;
-      } catch (err) {
-        alert('Error during token exchange: ' + err.message);
-        return false;
-      }
-    }
-
-    async function refreshAccessToken() {
-      if (!refreshToken) return false;
-      try {
-        const res = await fetch(`${backendBaseUrl}/refresh_token?refresh_token=${refreshToken}`, { method: 'GET' });
-        if (!res.ok) throw new Error('Failed to refresh token');
-        const data = await res.json();
-        accessToken = data.access_token;
-        tokenExpiryTime = Date.now() + (data.expires_in * 1000);
-        sessionStorage.setItem('access_token', accessToken);
-        sessionStorage.setItem('token_expiry', tokenExpiryTime);
-        return true;
-      } catch {
-        return false;
-      }
-    }
-
-    async function ensureTokenValid() {
-      if (!accessToken) return false;
-      if (Date.now() > tokenExpiryTime - 60000) {
-        // token expiring soon, refresh
-        const refreshed = await refreshAccessToken();
-        if (!refreshed) {
-          logout();
-          return false;
-        }
-      }
-      return true;
-    }
-
-    // === UI Updates ===
-
-    async function fetchUserProfile() {
-      await ensureTokenValid();
-      try {
-        const res = await fetch('https://api.spotify.com/v1/me', {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        if (!res.ok) throw new Error('Failed to get user profile');
-        const data = await res.json();
-        renderUserProfile(data);
-        await fetchUserPlaylists();
-      } catch (err) {
-        alert(err.message);
-      }
-    }
-
-    function renderUserProfile(user) {
-      userProfileDiv.innerHTML = `
-        <img src="${user.images[0]?.url || 'https://via.placeholder.com/68'}" alt="User avatar" />
-        <div>
-          <strong>${user.display_name}</strong>
-          <small>${user.email}</small>
-        </div>
-      `;
-    }
-
-    async function fetchUserPlaylists() {
-      await ensureTokenValid();
-      try {
-        const res = await fetch('https://api.spotify.com/v1/me/playlists?limit=10', {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        if (!res.ok) throw new Error('Failed to get playlists');
-        const data = await res.json();
-        renderPlaylists(data.items);
-      } catch (err) {
-        playlistsDiv.innerHTML = `<em>Could not load playlists</em>`;
-      }
-    }
-
-    function renderPlaylists(playlists) {
-      playlistsDiv.innerHTML = '';
-      if (playlists.length === 0) {
-        playlistsDiv.innerHTML = '<em>No playlists found</em>';
-        return;
-      }
-      playlists.forEach(pl => {
-        const plEl = document.createElement('div');
-        plEl.className = 'track';
-        plEl.innerHTML = `
-          <img src="${pl.images[0]?.url || 'https://via.placeholder.com/68'}" alt="Playlist cover" />
-          <div class="track-info" title="${pl.name}">
-            <div class="track-title">${pl.name}</div>
-            <div class="track-artists">${pl.tracks.total} tracks</div>
-          </div>
-        `;
-        playlistsDiv.appendChild(plEl);
+      // Search Spotify for tracks matching keywords
+      const query = keywords.map(k => `${k}`).join(' ');
+      const searchRes = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=15`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
       });
-    }
+      const searchData = await searchRes.json();
 
-    // === Mood Search ===
-
-    async function searchMoodTracks(mood) {
-      mood = mood.trim();
-      if (!mood) {
-        alert('Please enter a mood or vibe');
+      const tracks = searchData.tracks?.items || [];
+      if (tracks.length === 0) {
+        statusMsg.textContent = 'No songs found for that mood.';
+        resultsDiv.innerHTML = '';
         return;
       }
-      resultsDiv.innerHTML = '<em>Loading tracks...</em>';
-      try {
-        // Your backend endpoint for mood search
-        const res = await fetch(`${backendBaseUrl}/mood_search?mood=${encodeURIComponent(mood)}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        if (!res.ok) throw new Error('Failed to search tracks for mood');
-        const data = await res.json();
-        renderTracks(data.tracks);
-      } catch (err) {
-        resultsDiv.innerHTML = `<em>Error: ${err.message}</em>`;
-      }
-    }
 
-    function renderTracks(tracks) {
+      statusMsg.textContent = `Found ${tracks.length} tracks.`;
+
+      // Render tracks
       resultsDiv.innerHTML = '';
-      if (!tracks || tracks.length === 0) {
-        resultsDiv.innerHTML = '<em>No tracks found for that mood.</em>';
-        return;
-      }
       tracks.forEach(track => {
-        const trackEl = document.createElement('div');
-        trackEl.className = 'track';
-        trackEl.setAttribute('data-track-id', track.id);
+        const card = document.createElement('div');
+        card.className = 'track-card';
 
-        trackEl.innerHTML = `
-          <img src="${track.album.images[0]?.url || 'https://via.placeholder.com/68'}" alt="Album art" />
-          <div class="track-info" title="${track.name} by ${track.artists.map(a => a.name).join(', ')}">
-            <div class="track-title">${track.name}</div>
-            <div class="track-artists">${track.artists.map(a => a.name).join(', ')}</div>
-          </div>
-          <button class="play-btn" aria-label="Play preview">&#9658;</button>
-          <button class="add-btn" aria-label="Add to playlist">+</button>
-        `;
+        // Album art
+        const albumImg = document.createElement('img');
+        albumImg.className = 'album-art';
+        albumImg.src = track.album.images[0]?.url || '';
+        albumImg.alt = `Album art for ${track.name}`;
+        card.appendChild(albumImg);
 
-        const playBtn = trackEl.querySelector('.play-btn');
-        const addBtn = trackEl.querySelector('.add-btn');
+        // Track name clickable to Spotify
+        const trackName = document.createElement('a');
+        trackName.className = 'track-name';
+        trackName.href = track.external_urls.spotify;
+        trackName.target = '_blank';
+        trackName.rel = 'noopener noreferrer';
+        trackName.textContent = track.name;
+        card.appendChild(trackName);
 
-        playBtn.onclick = () => {
-          if (currentPlayingTrackId === track.id) {
-            audio.pause();
-            currentPlayingTrackId = null;
-            playBtn.innerHTML = '&#9658;';
-          } else {
-            playTrackPreview(track.preview_url, playBtn, track.id);
-          }
-        };
+        // Artist names
+        const artists = document.createElement('div');
+        artists.className = 'artist-name';
+        artists.textContent = track.artists.map(a => a.name).join(', ');
+        card.appendChild(artists);
 
-        addBtn.onclick = () => {
-          promptAddToPlaylist(track.id, track.name);
-        };
-
-        resultsDiv.appendChild(trackEl);
-      });
-    }
-
-    function playTrackPreview(previewUrl, btn, trackId) {
-      if (!previewUrl) {
-        alert('No preview available for this track.');
-        return;
-      }
-      if (currentPlayingTrackId && currentPlayingTrackId !== trackId) {
-        audio.pause();
-        // Reset old play button icons
-        [...document.querySelectorAll('.play-btn')].forEach(b => (b.innerHTML = '&#9658;'));
-      }
-
-      if (audio.paused || currentPlayingTrackId !== trackId) {
-        audio.src = previewUrl;
-        audio.play();
-        btn.innerHTML = '&#10074;&#10074;';
-        currentPlayingTrackId = trackId;
-      } else {
-        audio.pause();
-        btn.innerHTML = '&#9658;';
-        currentPlayingTrackId = null;
-      }
-
-      audio.onended = () => {
-        btn.innerHTML = '&#9658;';
-        currentPlayingTrackId = null;
-      };
-    }
-
-    async function promptAddToPlaylist(trackId, trackName) {
-      // Fetch playlists again to make sure fresh
-      await ensureTokenValid();
-      let playlistId = prompt('Enter Playlist ID to add "' + trackName + '" to:\n(To get playlist ID: open your playlist in Spotify and copy the last part of the URL after /playlist/ )');
-      if (!playlistId) return;
-
-      try {
-        const res = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            uris: [`spotify:track:${trackId}`],
-          }),
-        });
-        if (!res.ok) throw new Error('Failed to add track to playlist');
-        alert(`Added "${trackName}" to playlist!`);
-      } catch (err) {
-        alert('Error adding to playlist: ' + err.message);
-      }
-    }
-
-    // === Main flow ===
-
-    loginBtn.onclick = () => startLogin();
-
-    async function main() {
-      // Check if redirected back from Spotify auth with code
-      const params = parseQueryParams();
-
-      if (params.error) {
-        alert('Spotify authorization error: ' + params.error);
-        clearQueryParams();
-        return;
-      }
-
-      if (params.code) {
-        // exchange token via backend
-        const exchanged = await exchangeToken(params.code);
-        if (exchanged) {
-          loginBtn.style.display = 'none';
-          appDiv.style.display = 'flex';
-          await fetchUserProfile();
-          moodInput.focus();
+        // Audio preview player
+        if (track.preview_url) {
+          const audio = document.createElement('audio');
+          audio.controls = true;
+          audio.src = track.preview_url;
+          audio.setAttribute('aria-label', `Preview of ${track.name}`);
+          card.appendChild(audio);
         }
-        return;
-      }
 
-      // Check if tokens stored in sessionStorage
-      accessToken = sessionStorage.getItem('access_token');
-      refreshToken = sessionStorage.getItem('refresh_token');
-      tokenExpiryTime = parseInt(sessionStorage.getItem('token_expiry'), 10);
+        // Add to playlist button
+        const addBtn = document.createElement('button');
+        addBtn.className = 'add-playlist-btn';
+        addBtn.textContent = 'Add to My Feelify Playlist';
+        addBtn.onclick = async () => {
+          addBtn.disabled = true;
+          addBtn.textContent = 'Adding...';
+          try {
+            const res = await fetch(`${backendUrl}/add_to_playlist`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`
+              },
+              body: JSON.stringify({ trackUri: track.uri })
+            });
+            const data = await res.json();
+            if (data.success) {
+              addBtn.textContent = 'Added ✓';
+              showToast(`Added "${track.name}" to your playlist!`);
+            } else {
+              addBtn.textContent = 'Failed, try again';
+              showToast('Failed to add track. Please try again.');
+            }
+          } catch {
+            addBtn.textContent = 'Failed, try again';
+            showToast('Network error. Try again later.');
+          }
+          setTimeout(() => {
+            addBtn.disabled = false;
+            addBtn.textContent = 'Add to My Feelify Playlist';
+          }, 4000);
+        };
+        card.appendChild(addBtn);
 
-      if (accessToken && tokenExpiryTime && Date.now() < tokenExpiryTime) {
-        loginBtn.style.display = 'none';
-        appDiv.style.display = 'flex';
-        await fetchUserProfile();
-        moodInput.focus();
-      }
+        resultsDiv.appendChild(card);
+      });
+    } catch (err) {
+      console.error(err);
+      statusMsg.textContent = 'Error searching songs.';
+      resultsDiv.innerHTML = '';
     }
+  };
 
-    searchBtn.onclick = () => searchMoodTracks(moodInput.value);
+  // On page load
+  window.onload = () => {
+    tryExchangeToken();
+    updateUIByAuth();
 
-    main();
-  </script>
-
+    // Refresh token automatically if near expiry
+    setInterval(() => {
+      if (accessToken && tokenExpiry - Date.now() < 60000) { // refresh if less than 1 min left
+        refreshAccessToken();
+      }
+    }, 30000);
+  };
+</script>
 </body>
 </html>
